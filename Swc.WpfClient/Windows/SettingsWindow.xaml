@@ -1,0 +1,86 @@
+<Window x:Class="Swc.WpfClient.Windows.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:Swc.WpfClient.Windows"
+        xmlns:commands="clr-namespace:Swc.WpfClient.Commands"
+        xmlns:wpfClient="clr-namespace:Swc.WpfClient"
+        xmlns:template="clr-namespace:Swc.Template;assembly=Swc.Template"
+        xmlns:controls="clr-namespace:Swc.WpfClient.Controls"
+        xmlns:properties="clr-namespace:Swc.WpfClient.Properties"
+        mc:Ignorable="d"
+        Title="DatabaseObserverWindow" Height="450" Width="800"
+        WindowStyle="None"
+        Style="{DynamicResource WindowTopStyle}"
+        AllowsTransparency="True"
+        BorderThickness="1" BorderBrush="{DynamicResource SlightlyAccentedBackground}">
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="10" CornerRadius="0" CaptionHeight="0" GlassFrameThickness="0" />
+    </WindowChrome.WindowChrome>
+    <Window.CommandBindings>
+        <CommandBinding Command="commands:WindowCommands.Exit" Executed="ExitWindow" />
+    </Window.CommandBindings>
+    <Grid Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Background="{DynamicResource MenuBarBackground}" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Menu Margin="0 0 0 0" Height="30" Grid.Column="0" Style="{StaticResource MenuStyle}">
+            </Menu>
+            <Border Margin="3" wpfClient:EnableDragHelper.EnableDrag="True" Grid.Column="1"
+                    Style="{StaticResource FillingBorder}">
+                <TextBlock Margin="10 0 0 0" FontSize="15"
+                           Text="{Binding RelativeSource={RelativeSource AncestorType=wpfClient:MainWindow}, Path=FileName}"
+                           VerticalAlignment="Center" />
+            </Border>
+            <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Stretch"
+                        Orientation="Horizontal" x:Name="SystemButtons">
+                <Button FontFamily="Segoe MDL2 Assets" Content="&#xE8BB;" x:Name="CloseButton"
+                        Style="{StaticResource WindowControlButtonStyle}" Command="commands:WindowCommands.Exit" />
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1">
+            <StackPanel Orientation="Vertical">
+                <Expander VerticalAlignment="Top" Header="Database connection">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="25 0 0 0">
+                            <TextBlock Text="Database user name: " VerticalAlignment="Center" />
+                            <TextBox Padding="5"
+                                     Text="{Binding Source={x:Static properties:Settings.Default}, Path=DatabaseUser}"
+                                     VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="40" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="25 0 0 0">
+                            <TextBlock Text="Database password: " VerticalAlignment="Center" />
+                            <TextBox Padding="5"
+                                     Text="{Binding Source={x:Static properties:Settings.Default}, Path=DatabasePwd}"
+                                     VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="40" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="25 0 0 0">
+                            <TextBlock Text="Database ip: " VerticalAlignment="Center" />
+                            <TextBox Padding="5"
+                                     Text="{Binding Source={x:Static properties:Settings.Default}, Path=DatabaseIp}"
+                                     VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="40" />
+                        </StackPanel>
+                    </StackPanel>
+                </Expander>
+                <Expander VerticalAlignment="Top" Header="Presets">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="25 0 0 0">
+                            <TextBlock Text="Author name: " VerticalAlignment="Center" />
+                            <TextBox Padding="5"
+                                     Text="{Binding Source={x:Static properties:Settings.Default}, Path=AuthorName}"
+                                     VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="40" />
+                        </StackPanel>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

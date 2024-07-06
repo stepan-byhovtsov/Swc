@@ -1,0 +1,86 @@
+<UserControl x:Class="Swc.WpfClient.Controls.ObjectEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Swc.WpfClient.Controls"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <local:FloatToString x:Key="FloatToString" />
+        <local:IntToString x:Key="IntToString" />
+    </UserControl.Resources>
+    <Grid>
+        <ContentControl
+            Content="{Binding Object, RelativeSource={RelativeSource AncestorType=local:ObjectEditor}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+            <ContentControl.Resources>
+                <DataTemplate DataType="{x:Type local:StringMarshaller}">
+                    <TextBox
+                        Text="{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
+                        Padding="5"
+                        AcceptsReturn="True" />
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type local:FloatMarshaller}">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                        <TextBox Padding="5" PreviewTextInput="ValidateFloat"
+                                 Text="{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource FloatToString}}" />
+                        <TextBlock Padding="5" Text="{Binding Path=Unit.FullUnitName, Mode=OneWay}" />
+                    </StackPanel>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type local:IntMarshaller}">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                        <TextBox Padding="5" PreviewTextInput="ValidateInt"
+                                 Text="{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource IntToString}}" />
+                        <TextBlock Padding="5" Text="{Binding Path=Unit.FullUnitName, Mode=OneWay}" />
+                    </StackPanel>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type local:Vector3Marshaller}">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                        <TextBox Padding="5" PreviewTextInput="ValidateFloat"
+                                 Text="{Binding Path=X, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource FloatToString}}" />
+                        <TextBox Padding="5" PreviewTextInput="ValidateFloat"
+                                 Text="{Binding Path=Y, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource FloatToString}}" />
+                        <TextBox Padding="5" PreviewTextInput="ValidateFloat"
+                                 Text="{Binding Path=Z, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource FloatToString}}" />
+                        <TextBlock Padding="5" Text="{Binding Path=Unit.FullUnitName, Mode=OneWay}" />
+                    </StackPanel>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type local:Vector2Marshaller}">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                        <TextBox Padding="5" PreviewTextInput="ValidateFloat"
+                                 Text="{Binding Path=X, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource FloatToString}}" />
+                        <TextBox Padding="5" PreviewTextInput="ValidateFloat"
+                                 Text="{Binding Path=Y, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource FloatToString}}" />
+                        <TextBlock Padding="5" Text="{Binding Path=Unit.FullUnitName, Mode=OneWay}" />
+                    </StackPanel>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type local:NonEditableMarshaller}">
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type local:ComplexMarshaller}">
+                    <ComboBox SelectedIndex="{Binding SelectedIndex, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                              VerticalAlignment="Top" HorizontalAlignment="Left" ItemsSource="{Binding OptionNames}" IsEditable="True" StaysOpenOnEdit="True">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type system:String}">
+                                <TextBlock Text="{Binding .}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type local:ArrayMarshaller}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" MinWidth="10" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="5"
+                                   Text="Length: " />
+                        <TextBox Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="5"
+                                 PreviewTextInput="ValidateInt"
+                                 Text="{Binding Length, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource IntToString}}" />
+                    </Grid>
+                </DataTemplate>
+            </ContentControl.Resources>
+        </ContentControl>
+    </Grid>
+</UserControl>

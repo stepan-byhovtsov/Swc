@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UseWPF>true</UseWPF>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Swc.Core\Swc.Core.csproj" />
+      <ProjectReference Include="..\Swc.Template\Swc.Template.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MongoDB.Bson" Version="2.27.0" />
+      <PackageReference Include="MongoDB.Driver" Version="2.27.0" />
+      <PackageReference Include="MongoDB.Driver.Core" Version="2.27.0" />
+      <PackageReference Include="MongoDB.Driver.GridFS" Version="2.27.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Properties\Settings.Designer.cs">
+        <DesignTimeSharedInput>True</DesignTimeSharedInput>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Settings.settings</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Properties\Settings.settings">
+        <Generator>SettingsSingleFileGenerator</Generator>
+        <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+      </None>
+    </ItemGroup>
+
+</Project>

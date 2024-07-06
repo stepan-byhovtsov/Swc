@@ -1,0 +1,78 @@
+<Window x:Class="Swc.WpfClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Swc.WpfClient"
+        xmlns:cmd="clr-namespace:Swc.WpfClient.Commands"
+        xmlns:elements="clr-namespace:Swc.WpfClient.Controls"
+        mc:Ignorable="d"
+        Title="Editor" Height="450" Width="800"
+        WindowStyle="None"
+        Style="{DynamicResource WindowStyle}"
+        AllowsTransparency="True"
+        BorderThickness="5" BorderBrush="Transparent">
+    <Window.CommandBindings>
+        <CommandBinding Command="cmd:WindowCommands.Exit" Executed="ExitWindow"/>
+        <CommandBinding Command="cmd:WindowCommands.Minimize" Executed="Minimize"/>
+        <CommandBinding Command="cmd:WindowCommands.Maximize" Executed="Maximize"/>
+        <CommandBinding Command="cmd:WindowCommands.Restore" Executed="Restore"/>
+        
+        <CommandBinding Command="cmd:EditorCommands.NewFile" Executed="NewFile"/>
+        <CommandBinding Command="cmd:EditorCommands.OpenFile" Executed="OpenFile"/>
+        <CommandBinding Command="cmd:EditorCommands.SaveFile" Executed="SaveFile"/>
+        <CommandBinding Command="cmd:EditorCommands.SaveFileAs" Executed="SaveFileAs"/>
+        
+        <CommandBinding Command="cmd:EditorCommands.DownloadFromDb" Executed="DownloadFromDb"/>
+        <CommandBinding Command="cmd:EditorCommands.SaveToDb" Executed="SaveToDb"/>
+        <CommandBinding Command="cmd:EditorCommands.DatabaseObserver" Executed="DbObserver"/>
+        <CommandBinding Command="cmd:EditorCommands.SelectVehicleFile" Executed="DbSelectFile"/>
+        
+        <CommandBinding Command="cmd:EditorCommands.OpenSettings" Executed="OpenSettings"/>
+    </Window.CommandBindings>
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="10" CornerRadius="45" CaptionHeight="0" GlassFrameThickness="0"/>
+    </WindowChrome.WindowChrome>
+    <Grid Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Background="{DynamicResource MenuBarBackground}" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Menu Margin="0 0 0 0" Height="30" Grid.Column="0" Style="{StaticResource MenuStyle}">
+                <MenuItem Header="File">
+                    <MenuItem Header="New" Icon="{StaticResource NewFileIcon}" Command="cmd:EditorCommands.NewFile"/>
+                    <MenuItem Header="Open" Icon="{StaticResource OpenFileIcon}" Command="cmd:EditorCommands.OpenFile"/>
+                    <MenuItem Header="Save" Icon="{StaticResource SaveFileIcon}" Command="cmd:EditorCommands.SaveFile"/>
+                    <MenuItem Header="Save as" Icon="{StaticResource SaveFileAsIcon}" Command="cmd:EditorCommands.SaveFileAs"/>
+                    <Separator Style="{StaticResource MenuSeparator}"/>
+                    
+                    <MenuItem Header="Select vehicle file" Icon="{StaticResource SelectVehicleFileIcon}" Command="cmd:EditorCommands.SelectVehicleFile"/>
+                    <MenuItem Header="Download vehicle file from database" Icon="{StaticResource DownloadVehicleFromDb}" Command="cmd:EditorCommands.DownloadFromDb"/>
+                    <MenuItem Header="Save to database" Icon="{StaticResource SaveFileToDbIcon}" Command="cmd:EditorCommands.SaveToDb"/>
+                    <MenuItem Header="Database observer" Icon="{StaticResource DbObserverIcon}" Command="cmd:EditorCommands.DatabaseObserver"/>
+                </MenuItem>
+                <MenuItem Header="Edit">
+                    <MenuItem Header="Settings" Icon="{StaticResource SettingsIcon}" Command="cmd:EditorCommands.OpenSettings"/>
+                </MenuItem>
+            </Menu>
+            <Border Margin="3" local:EnableDragHelper.EnableDrag="True" Grid.Column="1" Style="{StaticResource FillingBorder}">
+                <TextBlock Margin="10 0 0 0" FontSize="15" Text="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow}, Path=FileName}" VerticalAlignment="Center"/>
+            </Border>
+            <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Stretch" Orientation="Horizontal" x:Name="SystemButtons">
+                <Button FontFamily="Segoe MDL2 Assets" Content="&#xE921;" x:Name="MinimizeButton" Style="{StaticResource WindowControlButtonStyle}" Command="cmd:WindowCommands.Minimize"/>
+                <Button FontFamily="Segoe MDL2 Assets" Content="&#xE922;" x:Name="MaximizeButton" Style="{StaticResource WindowControlButtonStyle}" Command="cmd:WindowCommands.Maximize"/>
+                <Button FontFamily="Segoe MDL2 Assets" Content="&#xE923;" x:Name="RestoreButton" Style="{StaticResource WindowControlButtonStyle}" Command="cmd:WindowCommands.Restore"/>
+                <Button FontFamily="Segoe MDL2 Assets" Content="&#xE8BB;" x:Name="CloseButton" Style="{StaticResource WindowControlButtonStyle}" Command="cmd:WindowCommands.Exit"/>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1">
+            <elements:CreationInspector x:Name="Inspector"/>
+        </Grid>
+    </Grid>
+</Window>

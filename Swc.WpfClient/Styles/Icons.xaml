@@ -1,0 +1,16 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <TextBlock x:Key="NewFileIcon" Text="&#xe710;" FontFamily="Segoe MDL2 Assets"/>
+    <TextBlock x:Key="OpenFileIcon" Text="&#xe8E5;" FontFamily="Segoe MDL2 Assets"/>
+    <TextBlock x:Key="SaveFileIcon" Text="&#xe74E;" FontFamily="Segoe MDL2 Assets"/>
+    <TextBlock x:Key="SaveFileAsIcon" Text="&#xe792;" FontFamily="Segoe MDL2 Assets"/>
+    <TextBlock x:Key="SaveFileToDbIcon" Text="&#xe898;" FontFamily="Segoe MDL2 Assets"/>
+    <TextBlock x:Key="DbObserverIcon" Text="&#xe74C;" FontFamily="Segoe MDL2 Assets"/>
+    <TextBlock x:Key="DbRefreshIcon" Text="&#xe72C;" FontFamily="Segoe MDL2 Assets"/>
+    <TextBlock x:Key="SelectVehicleFileIcon" Text="&#xE71B;" FontFamily="Segoe MDL2 Assets"/>
+    <TextBlock x:Key="DownloadVehicleFromDb" Text="&#xE896;" FontFamily="Segoe MDL2 Assets"/>
+    <TextBlock x:Key="Delete" Text="&#xE74D;" FontFamily="Segoe MDL2 Assets"/>
+    <TextBlock x:Key="SettingsIcon" Text="&#xE713;" FontFamily="Segoe MDL2 Assets"/>
+    
+    <TextBlock x:Key="EmptyIcon" Text="&#xF140;" FontFamily="Segoe MDL2 Assets"/>
+</ResourceDictionary>
