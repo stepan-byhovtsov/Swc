@@ -56,7 +56,7 @@
         <Grid Grid.Row="1">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="280"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
@@ -67,11 +67,18 @@
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type template:SwcObject}">
                             <Border HorizontalAlignment="Stretch" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource Border}">
-                                <StackPanel Orientation="Horizontal" Margin="5">
-                                    <TextBlock Text="{Binding Name}" />
-                                    <TextBlock Text=" by " Opacity="0.8" />
-                                    <TextBlock Opacity="0.8" Text="{Binding AuthorInfo.Author}" />
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal" Margin="5">
+                                        <TextBlock Text="{Binding Name}" />
+                                        <TextBlock Text=" by " Opacity="0.8" />
+                                        <TextBlock Opacity="0.8" Text="{Binding AuthorInfo.Author}" />
+                                    </StackPanel>
+                                    <TextBlock Margin="5" Grid.Column="1" HorizontalAlignment="Right" Opacity="0.8" Text="{Binding priority}" />
+                                </Grid>
                             </Border>
                         </DataTemplate>
                     </ListView.ItemTemplate>

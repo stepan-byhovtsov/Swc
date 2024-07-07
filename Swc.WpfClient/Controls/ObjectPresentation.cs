@@ -114,7 +114,7 @@ public class ObjectPresentation : DependencyObject
       }
    }
 
-   public ObjectPresentation(string name, Type type, ObjectPresentation? parent = null, object? value = null, PropertyInfo? propertyInfo = null)
+   public ObjectPresentation(string name, Type type, ObjectPresentation? parent = null, object? value = null, PropertyInfo? propertyInfo = null, bool readOnly = false)
    {
       Type = type;
       RealType = type;

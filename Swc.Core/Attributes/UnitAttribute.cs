@@ -35,5 +35,6 @@ public enum Unit
    Persons,
    Containers,
    
-   Seconds
+   Seconds,
+   Minutes
 }

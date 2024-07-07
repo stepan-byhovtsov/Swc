@@ -42,6 +42,7 @@ public class MongoDbHelper
       doc["_id"] = obj.Id;
       doc.Remove("File");
       doc.Remove("Id");
+      doc.Remove("priority");
       return doc;
    }
    

@@ -2,7 +2,7 @@ namespace Swc.Template.Vehicle;
 
 public abstract class VehicleEnvironment
 {
-   public FuelType[] FuelTypes { get; set; } = Array.Empty<FuelType>();
+   public FuelType[] FuelTypes { get; set; } = [];
    
    public class Space : VehicleEnvironment
    {

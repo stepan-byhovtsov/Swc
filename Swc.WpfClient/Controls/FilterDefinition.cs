@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Windows;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -20,7 +21,9 @@ public class FilterDefinition : DependencyObject
    public string[] PropertyNames { get; }
 
    public FilterOperation[] Filters { get; } =
-   {
+   [
+      // TODO: Handle multidimensional arrays
+      
       new("exists", false, (query, left, _, args) =>
       {
          if (args.ShouldSpecifyType)
@@ -100,8 +103,8 @@ public class FilterDefinition : DependencyObject
             left = $"\"${left}\"";
          }
          query.Sorts.Add(new JsonPipelineStageDefinition<BsonDocument, BsonDocument>($"{{$set:{{\"priority\":{{$sum:[\"$priority\",{{$multiply:[{right},{left}]}}]}}}}}}"));
-      }),
-    };
+      })
+   ];
 
    private int _selectedProperty = -1;
    private int _selectedFilter = -1;
@@ -137,6 +140,21 @@ public class FilterDefinition : DependencyObject
          return;
       }
 
+      if (type == typeof(Vector3))
+      {
+         list.Add($"{name1}.X");
+         list.Add($"{name1}.Y");
+         list.Add($"{name1}.Z");
+         return;
+      }
+      
+      if (type == typeof(Vector2))
+      {
+         list.Add($"{name1}.X");
+         list.Add($"{name1}.Y");
+         return;
+      }
+      
       if (type.IsArray)
       {
          list.Add($"{name1}#Count");

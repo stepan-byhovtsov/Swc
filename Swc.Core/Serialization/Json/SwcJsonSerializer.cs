@@ -159,7 +159,7 @@ public class SwcJsonSerializer : ISwcSerializer
       }
 
       var obj = type.GetConstructor(Type.EmptyTypes)!.Invoke(Array.Empty<object>());
-      foreach (var property in type.GetSerializedProperties())
+      foreach (var property in type.GetAllSerializedProperties())
       {
          if (value.ContainsKey(property.Name))
          {

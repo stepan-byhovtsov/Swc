@@ -26,4 +26,7 @@ public class SwcObject
    public CreationType? Type { get; set; }
 
    [NonEditable] public string File { get; set; } = "";
+   
+   // ReSharper disable once InconsistentNaming
+   [NonEditable] [NonSerializable] public int priority { get; set; }
 }
