@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using DnsClient;
 using MongoDB.Bson;
@@ -16,10 +17,10 @@ public partial class DatabaseObserverWindow : Window
 {
    public ObservableCollection<SwcObject> Objects { get; } = new();
    public ObservableCollection<FilterDefinition> Filters { get; } = new();
-   
+
    public MainWindow MainWindow { get; }
    public MongoDbHelper MongoDb => MainWindow.MongoDb;
-   
+
    public DatabaseObserverWindow(MainWindow mainWindow)
    {
       InitializeComponent();
@@ -27,13 +28,12 @@ public partial class DatabaseObserverWindow : Window
       Owner = mainWindow;
    }
 
-   protected override void OnActivated(EventArgs e)
+   private void Refresh(object sender, ExecutedRoutedEventArgs? e = null)
    {
-      base.OnActivated(e);
-      Refresh(this);
+      Refresh();
    }
 
-   private void Refresh(object sender, ExecutedRoutedEventArgs? e = null)
+   public void Refresh()
    {
       Objects.Clear();
 
@@ -45,21 +45,27 @@ public partial class DatabaseObserverWindow : Window
             filter.Filter?.Apply(query, filter.Property!, filter.Argument);
          }
 
-         var filterDefinition =
-            query.Filters.Aggregate(FilterDefinition<BsonDocument>.Empty, (current, filter) => current & filter);
+         List<JsonPipelineStageDefinition<BsonDocument, BsonDocument>> stages = [];
+         
+         stages.AddRange(query.Filters.Select(filterDefinition => 
+            new JsonPipelineStageDefinition<BsonDocument, BsonDocument>($"{{$match:{filterDefinition}}}")));
+         stages.Add(new JsonPipelineStageDefinition<BsonDocument, BsonDocument>("{$set:{\"priority\":0}}"));
+         stages.AddRange(query.Sorts);
+         stages.Add(new JsonPipelineStageDefinition<BsonDocument, BsonDocument>("{$sort:{\"priority\":1}}"));
 
-         var cursor = MongoDb.Objects.FindSync<BsonDocument>(filterDefinition);
+         var cursor =
+            MongoDb.Objects.Aggregate(new PipelineStagePipelineDefinition<BsonDocument, BsonDocument>(stages));
          foreach (var swcObject in cursor.ToEnumerable())
          {
             Objects.Add(MongoDb.FromBson(swcObject));
          }
       }
-      catch
+      catch (Exception exc)
       {
-         // TODO
+         MessageBox.Show(this, $"Invalid filters:\n{exc.Message}", "Error", MessageBoxButton.OK);
       }
    }
-   
+
    private void ExitWindow(object sender, ExecutedRoutedEventArgs e)
    {
       Hide();

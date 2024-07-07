@@ -21,37 +21,85 @@ public class FilterDefinition : DependencyObject
 
    public FilterOperation[] Filters { get; } =
    {
-      new("exists", false, (query, left, _) =>
+      new("exists", false, (query, left, _, args) =>
       {
-         query.Filters.Add(new JsonFilterDefinition<BsonDocument>($"{{\"{left}\":{{$exists:true}}}}"));
+         if (args.ShouldSpecifyType)
+         {
+            query.Filters.Add($"{{\"{left}.@Type\":\"{args.SpecificType}\"}}");
+         }
+         else
+         {
+            query.Filters.Add($"{{\"{left}\":{{$exists:true}}}}");
+         }
       }),
-      new("is greater than", true, (query, left, right) =>
+      new("is greater than", true, (query, left, right, args) =>
       {
-         query.Filters.Add(new JsonFilterDefinition<BsonDocument>($"{{\"{left}\":{{$gt:{right}}}}}"));
+         var operation = $"{{$gt:{right}}}";
+         if (args.ShouldWorkWithArrayLength)
+         {
+            left = $"{left}.{int.Parse(right)}";
+            operation = $"{{$exists:true}}";
+         }
+         query.Filters.Add($"{{\"{left}\":{operation}}}");
       }),
-      new("is less than", true, (query, left, right) =>
+      new("is less than", true, (query, left, right, args) =>
       {
-         query.Filters.Add(new JsonFilterDefinition<BsonDocument>($"{{\"{left}\":{{$lt:{right}}}}}"));
+         var operation = $"{{$lt:{right}}}";
+         if (args.ShouldWorkWithArrayLength)
+         {
+            left = $"{left}.{int.Parse(right)-1}";
+            operation = $"{{$exists:false}}";
+         }
+         query.Filters.Add($"{{\"{left}\":{operation}}}");
       }),
-      new("is equals to", true, (query, left, right) =>
+      new("is equals to", true, (query, left, right, args) =>
       {
-         query.Filters.Add(new JsonFilterDefinition<BsonDocument>($"{{\"{left}\":{{$eq:{right}}}}}"));
+         var operation = $"{{eq:{right}}}";
+         if (args.ShouldWorkWithArrayLength)
+         {
+            operation = $"{{$size:{right}}}";
+         }
+         query.Filters.Add($"{{\"{left}\":{operation}}}");
       }),
-      new("is greater or equals to", true, (query, left, right) =>
+      new("is greater or equals to", true, (query, left, right, args) =>
       {
-         query.Filters.Add(new JsonFilterDefinition<BsonDocument>($"{{\"{left}\":{{$gte:{right}}}}}"));
+         var operation = $"{{$gte:{right}}}";
+         if (args.ShouldWorkWithArrayLength)
+         {
+            left = $"{left}.{int.Parse(right)-1}";
+            operation = $"{{$exists:true}}";
+         }
+         query.Filters.Add($"{{\"{left}\":{operation}}}");
       }),
-      new("is less or equals to", true, (query, left, right) =>
+      new("is less or equals to", true, (query, left, right, args) =>
       {
-         query.Filters.Add(new JsonFilterDefinition<BsonDocument>($"{{\"{left}\":{{$lte:{right}}}}}"));
+         var operation = $"{{$lte:{right}}}";
+         if (args.ShouldWorkWithArrayLength)
+         {
+            left = $"{left}.{int.Parse(right)}";
+            operation = $"{{$exists:false}}";
+         }
+         query.Filters.Add($"{{\"{left}\":{operation}}}");
       }),
-      new("is not equals to", true, (query, left, right) =>
+      new("is not equals to", true, (query, left, right, args) =>
       {
-         query.Filters.Add(new JsonFilterDefinition<BsonDocument>($"{{\"{left}\":{{$ne:{right}}}}}"));
+         var operation = $"{{ne:{right}}}";
+         if (args.ShouldWorkWithArrayLength)
+         {
+            operation = $"{{$not:{{$size:{right}}}}}";
+         }
+         query.Filters.Add($"{{\"{left}\":{operation}}}");
       }),
-      new("sort with coefficient", true, (query, left, right) =>
+      new("sort with coefficient", true, (query, left, right, args) =>
       {
-         // TODO
+         if (args.ShouldWorkWithArrayLength)
+         {
+            left = $"{{$size:\"${left}\"}}";
+         }
+         else {
+            left = $"\"${left}\"";
+         }
+         query.Sorts.Add(new JsonPipelineStageDefinition<BsonDocument, BsonDocument>($"{{$set:{{\"priority\":{{$sum:[\"$priority\",{{$multiply:[{right},{left}]}}]}}}}}}"));
       }),
     };
 
@@ -113,8 +161,8 @@ public class FilterDefinition : DependencyObject
       set
       {
          if (SelectedProperty != value)
-         { 
-            Property = PropertyNames[value];
+         {
+            Property = value == -1 ? null : PropertyNames[value];
          }
 
          _selectedProperty = value;
@@ -128,7 +176,7 @@ public class FilterDefinition : DependencyObject
       {
          if (_selectedFilter != value)
          {
-            Filter = Filters[value];
+            Filter = value == -1 ? null : Filters[value];
          }
 
          _selectedFilter = value;

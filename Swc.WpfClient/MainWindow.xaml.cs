@@ -143,6 +143,7 @@ public partial class MainWindow : Window
       if (DatabaseObserverWindow is null || !DatabaseObserverWindow.IsLoaded)
          DatabaseObserverWindow = new DatabaseObserverWindow(this);
 
+      DatabaseObserverWindow.Refresh();
       DatabaseObserverWindow.Show();
    }
    

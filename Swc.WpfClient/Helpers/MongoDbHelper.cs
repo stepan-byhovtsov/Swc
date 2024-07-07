@@ -62,7 +62,7 @@ public class MongoDbHelper
       await SaveToDb(obj);
    }
    
-   public async Task DownloadFile(SwcObject obj) // TODO: Implement downloading functionality, the functionality to operate temporary vehicle etc.
+   public async Task DownloadFile(SwcObject obj)
    {
       var bytes = await GridFs.DownloadAsBytesAsync(obj.Id!.Value);
       if (bytes is null)

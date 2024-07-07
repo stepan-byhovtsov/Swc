@@ -5,7 +5,8 @@ namespace Swc.WpfClient.Commands;
 
 public class DatabaseObserverCommands
 {
-   public static RoutedCommand Refresh { get; set; } = new("Refresh", typeof(DatabaseObserverWindow));
+   public static RoutedCommand Refresh { get; set; } = new("Refresh", typeof(DatabaseObserverWindow))
+      {InputGestures = {new KeyGesture(Key.Enter)}};
    public static RoutedCommand AddFilter { get; set; } = new("Add filter", typeof(DatabaseObserverWindow));
 
    public static RoutedCommand DeleteSelectedFilters { get; set; } =
