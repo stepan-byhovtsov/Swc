@@ -88,7 +88,7 @@ public partial class MainWindow : Window
    private void NewFile(object sender, ExecutedRoutedEventArgs e)
    {
       FileName = "";
-      Inspector.Creation = new SwcObject {AuthorInfo = { Author = Properties.Settings.Default.AuthorName }};
+      Inspector.Object = new SwcObject {AuthorInfo = SettingsWindow.AuthorInfo };
    }
 
    private void OpenFile(object sender, ExecutedRoutedEventArgs e)
@@ -98,7 +98,7 @@ public partial class MainWindow : Window
       if (!dialog.ShowDialog()!.Value) return;
       
       using var stream = dialog.OpenFile();
-      Inspector.Creation = (SwcObject) _serializer.Deserialize(typeof(SwcObject), stream)!;
+      Inspector.Object = (SwcObject) _serializer.Deserialize(typeof(SwcObject), stream)!;
       FileName = dialog.FileName;
    }
 
@@ -127,13 +127,13 @@ public partial class MainWindow : Window
    private void SaveFile()
    {
       using var stream = new FileStream(FileName, FileMode.Create); 
-      _serializer.Serialize(Inspector.Creation!, typeof(SwcObject), stream);
+      _serializer.Serialize(Inspector.Object!, typeof(SwcObject), stream);
       stream.Flush();
    }
    
    private async void SaveToDb(object sender, ExecutedRoutedEventArgs e)
    {
-       await MongoDb.SaveToDb(Inspector.Creation!);
+       await MongoDb.SaveToDb((SwcObject) Inspector.Object!);
    }
    
    #endregion
@@ -162,28 +162,28 @@ public partial class MainWindow : Window
       if (fileDialog.ShowDialog() == true)
       {
          var file = await File.ReadAllTextAsync(fileDialog.FileName);
-         Inspector.Creation!.File = file;
-         await MongoDb.UploadFile(Inspector.Creation);
+         ((SwcObject)Inspector.Object!).File = file;
+         await MongoDb.UploadFile((SwcObject) Inspector.Object);
       }
    }
 
    private async void DownloadFromDb(object sender, ExecutedRoutedEventArgs e)
    {
-      await MongoDb.DownloadFile(Inspector.Creation!);
+      await MongoDb.DownloadFile((SwcObject) Inspector.Object!);
       
       SaveFileDialog fileDialog = new SaveFileDialog();
       fileDialog.Filter = "Stormworks vehicle save (*.xml)|*.xml";
       if (fileDialog.ShowDialog() == true)
       {
-         await File.WriteAllTextAsync(fileDialog.FileName, Inspector.Creation!.File);
+         await File.WriteAllTextAsync(fileDialog.FileName, ((SwcObject) Inspector.Object!).File);
       }
       
    }
 
    private void Refresh(object sender, ExecutedRoutedEventArgs e)
    {
-      var was = Inspector.Creation;
-      Inspector.Creation = new SwcObject();
-      Inspector.Creation = was;
+      var was = Inspector.Object;
+      Inspector.Object = new SwcObject();
+      Inspector.Object = was;
    }
 }

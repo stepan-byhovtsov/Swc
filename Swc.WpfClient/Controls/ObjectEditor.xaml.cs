@@ -22,7 +22,7 @@ public partial class ObjectEditor : INotifyPropertyChanged
       ObjectProperty = DependencyProperty.Register(nameof(Object), typeof(Marshaller), typeof(ObjectEditor),
          new PropertyMetadata(ObjectChangedCallback));
       InspectorProperty =
-         DependencyProperty.Register(nameof(Inspector), typeof(CreationInspector), typeof(ObjectEditor));
+         DependencyProperty.Register(nameof(Inspector), typeof(ObjectInspector), typeof(ObjectEditor));
    }
 
    private static void ObjectChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -40,9 +40,9 @@ public partial class ObjectEditor : INotifyPropertyChanged
       }
    }
 
-   public CreationInspector? Inspector
+   public ObjectInspector? Inspector
    {
-      get => (CreationInspector?) GetValue(InspectorProperty);
+      get => (ObjectInspector?) GetValue(InspectorProperty);
       set => SetValue(InspectorProperty, value);
    }
 

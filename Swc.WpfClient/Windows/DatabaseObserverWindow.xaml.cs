@@ -74,7 +74,7 @@ public partial class DatabaseObserverWindow : Window
    {
       if (e.AddedItems.Count > 0)
       {
-         MainWindow.Inspector.Creation = (SwcObject) e.AddedItems[0]!;
+         MainWindow.Inspector.Object = (SwcObject) e.AddedItems[0]!;
          Hide();
       }
    }

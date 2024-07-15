@@ -48,35 +48,32 @@
         </Grid>
         <Grid Grid.Row="1">
             <StackPanel Orientation="Vertical">
-                <Expander VerticalAlignment="Top" Header="Database connection">
+                <Expander VerticalAlignment="Top" Header="Database connection" Foreground="{DynamicResource Foreground}">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="25 0 0 0">
                             <TextBlock Text="Database user name: " VerticalAlignment="Center" />
-                            <TextBox Padding="5"
+                            <TextBox Padding="5" Foreground="{DynamicResource Foreground}"
                                      Text="{Binding Source={x:Static properties:Settings.Default}, Path=DatabaseUser}"
                                      VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="40" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="25 0 0 0">
-                            <TextBlock Text="Database password: " VerticalAlignment="Center" />
-                            <TextBox Padding="5"
+                            <TextBlock Text="Database password: " VerticalAlignment="Center" Foreground="{DynamicResource Foreground}"/>
+                            <TextBox Padding="5" Foreground="{DynamicResource Foreground}"
                                      Text="{Binding Source={x:Static properties:Settings.Default}, Path=DatabasePwd}"
                                      VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="40" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="25 0 0 0">
-                            <TextBlock Text="Database ip: " VerticalAlignment="Center" />
-                            <TextBox Padding="5"
+                            <TextBlock Text="Database ip: " VerticalAlignment="Center"  Foreground="{DynamicResource Foreground}"/>
+                            <TextBox Padding="5" Foreground="{DynamicResource Foreground}"
                                      Text="{Binding Source={x:Static properties:Settings.Default}, Path=DatabaseIp}"
                                      VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="40" />
                         </StackPanel>
                     </StackPanel>
                 </Expander>
-                <Expander VerticalAlignment="Top" Header="Presets">
+                <Expander VerticalAlignment="Top" Header="Presets" Foreground="{DynamicResource Foreground}">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="25 0 0 0">
-                            <TextBlock Text="Author name: " VerticalAlignment="Center" />
-                            <TextBox Padding="5"
-                                     Text="{Binding Source={x:Static properties:Settings.Default}, Path=AuthorName}"
-                                     VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="40" />
+                            <controls:ObjectInspector x:Name="AuthorInfoInspector" ObjectName="My author info" ObjectType="{x:Type template:AuthorInfo}"/>
                         </StackPanel>
                     </StackPanel>
                 </Expander>

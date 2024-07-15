@@ -1,4 +1,4 @@
-<UserControl x:Class="Swc.WpfClient.Controls.CreationInspector"
+<UserControl x:Class="Swc.WpfClient.Controls.ObjectInspector"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -44,8 +44,8 @@
                         </HierarchicalDataTemplate.Triggers>
                     </HierarchicalDataTemplate>
                 </TreeView.Resources>
-                <TreeViewItem Foreground="{DynamicResource Foreground}" Header="Creature"
-                              ItemsSource="{Binding Presentation.Properties, RelativeSource={RelativeSource AncestorType=local:CreationInspector}}" />
+                <TreeViewItem Foreground="{DynamicResource Foreground}" Header="{Binding RelativeSource={RelativeSource AncestorType=local:ObjectInspector}, Path=ObjectName}"
+                              ItemsSource="{Binding Presentation.Properties, RelativeSource={RelativeSource AncestorType=local:ObjectInspector}}" />
             </TreeView>
         </Border>
         <GridSplitter Grid.Column="1" Background="{DynamicResource MenuBarBackground}" Width="2"
@@ -56,7 +56,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <local:ObjectEditor Grid.Row="1" Margin="10" x:Name="Editor" Inspector="{Binding Path=.,RelativeSource={RelativeSource AncestorType=local:CreationInspector}}"/>
+                <local:ObjectEditor Grid.Row="1" Margin="10" x:Name="Editor" Inspector="{Binding Path=.,RelativeSource={RelativeSource AncestorType=local:ObjectInspector}}"/>
             </Grid>
         </Border>
     </Grid>

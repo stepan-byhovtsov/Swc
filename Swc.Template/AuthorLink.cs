@@ -3,5 +3,5 @@
 public class AuthorLink
 {
    public string ResourceName { get; set; } = "";
-   public string Linl { get; set; } = "";
+   public string Link { get; set; } = "";
 }

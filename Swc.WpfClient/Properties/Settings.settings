@@ -1,10 +1,7 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Swc.WpfClient.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="AuthorName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Anonymous</Value>
-    </Setting>
     <Setting Name="DatabaseIp" Type="System.String" Scope="User">
       <Value Profile="(Default)">45.67.216.36</Value>
     </Setting>
@@ -14,5 +11,9 @@
     <Setting Name="DatabasePwd" Type="System.String" Scope="User">
       <Value Profile="(Default)">eW00wwDxJ4SuLx4yEiwRM52Qh1oa00ct</Value>
     </Setting>
+    <Setting Name="AuthorInfo" Type="System.String" Scope="User">
+      <Value Profile="(Default)">{}</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
+

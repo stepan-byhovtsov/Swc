@@ -75,7 +75,7 @@
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1">
-            <elements:CreationInspector x:Name="Inspector"/>
+            <elements:ObjectInspector x:Name="Inspector"/>
         </Grid>
     </Grid>
 </Window>

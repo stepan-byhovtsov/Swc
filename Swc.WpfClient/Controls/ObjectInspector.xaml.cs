@@ -8,21 +8,35 @@ using Swc.Template;
 
 namespace Swc.WpfClient.Controls;
 
-public partial class CreationInspector : UserControl
+public partial class ObjectInspector : UserControl
 {
+   private Type _objectType = typeof(SwcObject);
+   public string ObjectName { get; set; } = "Creation";
 
-   public SwcObject? Creation
+   public Type ObjectType
    {
-      get => (SwcObject?) Presentation.Value;
+      get => _objectType;
+      set
+      {
+         _objectType = value;
+         Presentation = new ObjectPresentation(ObjectName, ObjectType);
+         Object = ObjectType.GetConstructor(Type.EmptyTypes)!.Invoke([]);
+      }
+   }
+
+   public object? Object
+   {
+      get => Presentation.Value;
       set => Presentation.Value = value;
    }
 
-   public ObjectPresentation Presentation { get; set; } = new("Creation", typeof(SwcObject));
+   public ObjectPresentation Presentation { get; set; }
    
-   public CreationInspector()
+   public ObjectInspector()
    {
-      Creation = new SwcObject();
       InitializeComponent();
+      Presentation = new ObjectPresentation(ObjectName, ObjectType);
+      Object = ObjectType.GetConstructor(Type.EmptyTypes)!.Invoke([]);
    }
    
    private void OnSelectedChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
