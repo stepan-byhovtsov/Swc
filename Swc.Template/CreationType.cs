@@ -11,8 +11,9 @@ public abstract class CreationType
       [Unit(Unit.Kilograms)] public float Mass { get; set; }
       [Unit(Unit.Blocks)] [Int] public Vector3 Bounds { get; set; }
 
-      public Purpose[] Purposes { get; set; } = Array.Empty<Purpose>();
-      public VehicleEnvironment[] Environments { get; set; } = Array.Empty<VehicleEnvironment>();
+      public Purpose[] Purposes { get; set; } = [];
+      public VehicleEnvironment[] Environments { get; set; } = [];
+      public FuelType[] FuelTypes { get; set; } = [];
    }
 
    public class Microcontroller : CreationType

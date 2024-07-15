@@ -11,7 +11,7 @@ namespace Swc.Core.Serialization.Json;
 public class SwcJsonSerializer : ISwcSerializer
 {
    private static bool WriteIndented => Debugger.IsAttached;
-   
+
    public void Serialize(object obj, Type type, Stream stream)
    {
       var json = Serialize(obj, type)!;
@@ -25,7 +25,7 @@ public class SwcJsonSerializer : ISwcSerializer
    {
       return SerializeToJsonNode(obj, typeof(T));
    }
-   
+
    public static JsonNode SerializeToJsonNode(object obj, Type type)
    {
       return Serialize(obj, type)!;
@@ -52,7 +52,7 @@ public class SwcJsonSerializer : ISwcSerializer
       {
          return new JsonObject {{"X", vec2.X}, {"Y", vec2.Y}};
       }
-      
+
       if (obj is ObjectId id)
       {
          return JsonValue.Create(id.ToString());
@@ -86,7 +86,7 @@ public class SwcJsonSerializer : ISwcSerializer
    private static JsonObject SerializeComplexType(object o, Type type)
    {
       var json = new JsonObject();
-      foreach (var property in type.GetSerializedProperties())
+      foreach (var property in type.GetShownProperties())
       {
          json.Add(property.Name, Serialize(property.GetValue(o), property.PropertyType));
       }
@@ -112,24 +112,31 @@ public class SwcJsonSerializer : ISwcSerializer
    {
       return (T) Deserialize(value, typeof(T))!;
    }
-   
+
    public static object? Deserialize(JsonNode? value, Type type)
    {
-      if (value == null)
-         return null;
-
-      if (type.IsAbstract)
-         return DeserializeAbstractType(value, type);
-      
-      if (type == typeof(ObjectId?))
-         return ObjectId.Parse(value.GetValue<string>());
-
-      return value.GetValueKind() switch
+      try
       {
-         JsonValueKind.Array => DeserializeArrayType(value.AsArray(), type),
-         JsonValueKind.Object => DeserializeComplexType(value.AsObject(), type),
-         _ => value.Deserialize(type)
-      };
+         if (value == null)
+            return null;
+
+         if (type.IsAbstract)
+            return DeserializeAbstractType(value, type);
+
+         if (type == typeof(ObjectId?))
+            return ObjectId.Parse(value.GetValue<string>());
+
+         return value.GetValueKind() switch
+         {
+            JsonValueKind.Array => DeserializeArrayType(value.AsArray(), type),
+            JsonValueKind.Object => DeserializeComplexType(value.AsObject(), type),
+            _ => value.Deserialize(type)
+         };
+      }
+      catch
+      {
+         return null;
+      }
    }
 
    private static object? DeserializeArrayType(JsonArray value, Type type)
@@ -151,19 +158,23 @@ public class SwcJsonSerializer : ISwcSerializer
             value["Y"]!.GetValue<float>(),
             value["Z"]!.GetValue<float>());
       }
-      
+
       if (type == typeof(Vector2))
       {
          return new Vector2(value["X"]!.GetValue<float>(),
             value["Y"]!.GetValue<float>());
       }
 
-      var obj = type.GetConstructor(Type.EmptyTypes)!.Invoke(Array.Empty<object>());
+      var obj = type.GetConstructor(Type.EmptyTypes)!.Invoke([]);
       foreach (var property in type.GetAllSerializedProperties())
       {
          if (value.ContainsKey(property.Name))
          {
-            property.SetValue(obj, Deserialize(value[property.Name]!, property.PropertyType));
+            var newValue = Deserialize(value[property.Name]!, property.PropertyType);
+            if (newValue != null)
+            {
+               property.SetValue(obj, newValue);
+            }
          }
       }
 

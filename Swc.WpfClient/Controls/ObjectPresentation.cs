@@ -23,7 +23,11 @@ public class ObjectPresentation : DependencyObject
    
    public UnitAttribute Unit { get; }
    
+   public bool IsEditable { get; }
+   
    public ObservableCollection<ObjectPresentation> Properties { get; } = new();
+   
+   public List<ObjectPresentation> AffectedProperties { get; } = new();
 
    public static readonly DependencyProperty ValueProperty =
       DependencyProperty.Register(nameof(Value), typeof(object), typeof(ObjectPresentation), new PropertyMetadata(ValueChanged));
@@ -79,8 +83,13 @@ public class ObjectPresentation : DependencyObject
          }
       }
 
-      if (Parent != null)
+      if (Parent != null && IsEditable)
          Parent[Name] = value;
+
+      foreach (var affected in AffectedProperties)
+      {
+         affected.Value = affected.Parent![affected.Name];
+      }
    }
    
    private static void ValueChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
@@ -119,7 +128,7 @@ public class ObjectPresentation : DependencyObject
       Type = type;
       RealType = type;
       MyPropertyInfo = propertyInfo;
-      
+
       if (!IsSimpleType(type))
       {
          GenerateProperties();
@@ -132,11 +141,17 @@ public class ObjectPresentation : DependencyObject
       
       Name = name;
       Parent = parent;
-
+      IsEditable = true;
+      
       UnitAttribute? unit = null;
       if (propertyInfo != null)
       {
          unit = propertyInfo.GetCustomAttribute<UnitAttribute>();
+         IsEditable = propertyInfo.CanWrite;
+         foreach (var dependency in propertyInfo.GetCustomAttributes<DependsOnAttribute>())
+         {
+            Parent!.Properties.First(c => c.Name == dependency.MemberName).AffectedProperties.Add(this);
+         }
       }
 
       Unit = unit ?? new UnitAttribute(Core.Attributes.Unit.Number);
@@ -179,7 +194,7 @@ public class ObjectPresentation : DependencyObject
    private void GenerateProperties()
    {
       Properties.Clear();
-      var properties = RealType.GetSerializedProperties();
+      var properties = RealType.GetShownProperties();
       foreach (var property in properties)
       {
          var editable = property.GetCustomAttribute<NonEditableAttribute>() == null;

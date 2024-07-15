@@ -12,6 +12,10 @@ public class DatabaseObserverCommands
    public static RoutedCommand DeleteSelectedFilters { get; set; } =
       new("Delete selected filters", typeof(DatabaseObserverWindow))
          {InputGestures = {new KeyGesture(Key.Delete)}};
-   
+
+   public static RoutedCommand ExportDiscordChallengeMessage { get; set; } =
+      new("Export discord challenge message", typeof(DatabaseObserverWindow));
+
+
    //   {InputGestures = {new KeyGesture(Key.N, ModifierKeys.Control)}};
 }

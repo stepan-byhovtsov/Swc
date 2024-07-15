@@ -95,12 +95,28 @@ public class FilterDefinition : DependencyObject
       }),
       new("sort with coefficient", true, (query, left, right, args) =>
       {
+         // TODO: Handle arrays without type specifications
+         
+         if (args.PathInArrays.Length != 0)
+         {
+            left = $"\"${args.PathInArrays[0].path}\"";
+            foreach (var (path, type, field) in args.PathInArrays)
+            {
+               left = $"{{$arrayElemAt: [{{ $filter:{{input:{left},cond:{{\"@Type\":\"{type}\"}}}} }},0]}}";
+               foreach (var subPath in field.Split('.'))
+               {
+                  left = $"{{ $getField: {{input:{left}, field:\"{subPath}\"}}}}";
+               }
+            }
+         }
          if (args.ShouldWorkWithArrayLength)
          {
             left = $"{{$size:\"${left}\"}}";
          }
          else {
-            left = $"\"${left}\"";
+            if (args.PathInArrays.Length == 0) {
+               left = $"\"${left}\"";
+            }  
          }
          query.Sorts.Add(new JsonPipelineStageDefinition<BsonDocument, BsonDocument>($"{{$set:{{\"priority\":{{$sum:[\"$priority\",{{$multiply:[{right},{left}]}}]}}}}}}"));
       })
@@ -119,7 +135,7 @@ public class FilterDefinition : DependencyObject
 
    private void AddAllPropertiesOf(Type type, List<string> list, string prefix = "")
    {
-      foreach (var property in type.GetSerializedProperties())
+      foreach (var property in type.GetShownProperties())
       {
          AddProperty(property.PropertyType, list, prefix + property.Name);
       }
@@ -127,12 +143,11 @@ public class FilterDefinition : DependencyObject
 
    private void AddProperty(Type type, List<string> list, string prefix)
    {
-      string name1 = prefix;
       if (type.IsAbstract)
       {
          foreach (var nestedType in type.GetNestedTypes())
          {
-            var name2 = $"{name1}({nestedType.Name})";
+            var name2 = $"{prefix}({nestedType.Name})";
             list.Add(name2);
             AddProperty(nestedType, list, name2);
          }
@@ -142,23 +157,23 @@ public class FilterDefinition : DependencyObject
 
       if (type == typeof(Vector3))
       {
-         list.Add($"{name1}.X");
-         list.Add($"{name1}.Y");
-         list.Add($"{name1}.Z");
+         list.Add($"{prefix}.X");
+         list.Add($"{prefix}.Y");
+         list.Add($"{prefix}.Z");
          return;
       }
       
       if (type == typeof(Vector2))
       {
-         list.Add($"{name1}.X");
-         list.Add($"{name1}.Y");
+         list.Add($"{prefix}.X");
+         list.Add($"{prefix}.Y");
          return;
       }
       
       if (type.IsArray)
       {
-         list.Add($"{name1}#Count");
-         var name2 = $"{name1}[Any]";
+         list.Add($"{prefix}#Count");
+         var name2 = $"{prefix}[Any]";
          var elementType = type.GetElementType()!;
          AddProperty(elementType, list, name2);
          return;
@@ -166,11 +181,11 @@ public class FilterDefinition : DependencyObject
 
       if (!ObjectPresentation.IsSimpleType(type))
       {
-         AddAllPropertiesOf(type, list, name1 + ".");
+         AddAllPropertiesOf(type, list, prefix + ".");
          return;
       }
 
-      list.Add(name1);
+      list.Add(prefix);
    }
 
    public int SelectedProperty

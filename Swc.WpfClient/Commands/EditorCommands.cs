@@ -17,11 +17,16 @@ public class EditorCommands
       {InputGestures = {new KeyGesture(Key.S, ModifierKeys.Control | ModifierKeys.Shift)}};
 
 
-   public static RoutedCommand DownloadFromDb { get; set; } = new("Download vehicle file from Database", typeof(MainWindow));
+   public static RoutedCommand DownloadFromDb { get; set; } =
+      new("Download vehicle file from Database", typeof(MainWindow));
+
    public static RoutedCommand SaveToDb { get; set; } = new("Save To Database", typeof(MainWindow));
    public static RoutedCommand SelectVehicleFile { get; set; } = new("Save To Database", typeof(MainWindow));
    public static RoutedCommand DatabaseObserver { get; set; } = new("Database Observer", typeof(MainWindow));
-   
+
+   public static RoutedCommand Refresh { get; set; } = new("Refresh", typeof(MainWindow))
+      {InputGestures = {new KeyGesture(Key.Enter)}};
+
    public static RoutedCommand OpenSettings { get; set; } = new("Open settings", typeof(MainWindow));
    //{ InputGestures = { new KeyGesture(Key.S, ModifierKeys.Control | ModifierKeys.Shift) }};
 }

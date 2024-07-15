@@ -13,35 +13,85 @@
     </UserControl.Resources>
     <Grid>
         <ContentControl
+            Foreground="{DynamicResource Foreground}"
             Content="{Binding Object, RelativeSource={RelativeSource AncestorType=local:ObjectEditor}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
             <ContentControl.Resources>
                 <DataTemplate DataType="{x:Type local:StringMarshaller}">
-                    <TextBox
-                        Text="{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
-                        Padding="5"
-                        AcceptsReturn="True" />
+                    <TextBox Focusable="True"
+                             Foreground="{DynamicResource Foreground}"
+                             TabIndex="0"
+                             Loaded="TextBox_VisibilityChanged"
+                             GotKeyboardFocus="TextBox_GotFocus"
+                             PreviewMouseDown="TextBox_PreviewMouseDown"
+                             KeyDown="TextBox_KeyDown"
+                             Text="{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
+                             Padding="5"
+                             AcceptsReturn="True" />
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type local:ReadOnlyMarshaller}">
+                    <Grid>
+                        <TextBox Focusable="True"
+                                 Width="0"
+                                 Height="0"
+                                 TabIndex="0"
+                                 Loaded="TextBox_VisibilityChanged"
+                                 KeyDown="TextBox_KeyDown"/>
+                        <TextBlock Focusable="True"
+                                   Foreground="{DynamicResource Foreground}"
+                                   Text="{Binding Path=Value, Mode=OneWay}"
+                                   Padding="5" />
+                    </Grid>
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type local:FloatMarshaller}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
-                        <TextBox Padding="5" PreviewTextInput="ValidateFloat"
+                        <TextBox Focusable="True"
+                                 TabIndex="0"
+                                 Loaded="TextBox_VisibilityChanged"
+                                 Padding="5" 
+                                 PreviewTextInput="ValidateFloat"
+                                 Foreground="{DynamicResource Foreground}"
+                                 GotKeyboardFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown"
+                                 KeyDown="TextBox_KeyDown"
                                  Text="{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource FloatToString}}" />
                         <TextBlock Padding="5" Text="{Binding Path=Unit.FullUnitName, Mode=OneWay}" />
                     </StackPanel>
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type local:IntMarshaller}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
-                        <TextBox Padding="5" PreviewTextInput="ValidateInt"
+                        <TextBox Focusable="True"
+                                 TabIndex="0"
+                                 Padding="5" PreviewTextInput="ValidateInt"
+                                 Foreground="{DynamicResource Foreground}"
+                                 Loaded="TextBox_VisibilityChanged"
+                                 GotKeyboardFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown"
+                                 KeyDown="TextBox_KeyDown"
                                  Text="{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource IntToString}}" />
                         <TextBlock Padding="5" Text="{Binding Path=Unit.FullUnitName, Mode=OneWay}" />
                     </StackPanel>
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type local:Vector3Marshaller}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
-                        <TextBox Padding="5" PreviewTextInput="ValidateFloat"
+                        <TextBox Focusable="True"
+                                 TabIndex="0"
+                                 Padding="5" 
+                                 Loaded="TextBox_VisibilityChanged"
+                                 PreviewTextInput="ValidateFloat"
+                                 GotKeyboardFocus="TextBox_GotFocus" 
+                                 PreviewMouseDown="TextBox_PreviewMouseDown"
+                                 Foreground="{DynamicResource Foreground}"
                                  Text="{Binding Path=X, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource FloatToString}}" />
                         <TextBox Padding="5" PreviewTextInput="ValidateFloat"
+                                 TabIndex="0"
+                                 Foreground="{DynamicResource Foreground}"
+                                 Loaded="TextBox_VisibilityChanged"
+                                 GotKeyboardFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown"
                                  Text="{Binding Path=Y, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource FloatToString}}" />
                         <TextBox Padding="5" PreviewTextInput="ValidateFloat"
+                                 TabIndex="0"
+                                 Foreground="{DynamicResource Foreground}"
+                                 Loaded="TextBox_VisibilityChanged"
+                                 GotKeyboardFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown"
+                                 KeyDown="TextBox_KeyDown"
                                  Text="{Binding Path=Z, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource FloatToString}}" />
                         <TextBlock Padding="5" Text="{Binding Path=Unit.FullUnitName, Mode=OneWay}" />
                     </StackPanel>
@@ -49,34 +99,58 @@
                 <DataTemplate DataType="{x:Type local:Vector2Marshaller}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
                         <TextBox Padding="5" PreviewTextInput="ValidateFloat"
+                                 TabIndex="0"
+                                 Foreground="{DynamicResource Foreground}"
+                                 Loaded="TextBox_VisibilityChanged"
+                                 GotKeyboardFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown"
                                  Text="{Binding Path=X, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource FloatToString}}" />
                         <TextBox Padding="5" PreviewTextInput="ValidateFloat"
+                                 TabIndex="0"
+                                 Foreground="{DynamicResource Foreground}"
+                                 GotKeyboardFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown"
+                                 KeyDown="TextBox_KeyDown"
                                  Text="{Binding Path=Y, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource FloatToString}}" />
                         <TextBlock Padding="5" Text="{Binding Path=Unit.FullUnitName, Mode=OneWay}" />
                     </StackPanel>
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type local:NonEditableMarshaller}">
+                    <TextBox Focusable="True"
+                             Width="0"
+                             Height="0"
+                             TabIndex="0"
+                             Loaded="TextBox_VisibilityChanged"
+                             KeyDown="TextBox_KeyDown"/>
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type local:ComplexMarshaller}">
                     <ComboBox SelectedIndex="{Binding SelectedIndex, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                              VerticalAlignment="Top" HorizontalAlignment="Left" ItemsSource="{Binding OptionNames}" IsEditable="True" StaysOpenOnEdit="True">
+                              VerticalAlignment="Top" HorizontalAlignment="Left" ItemsSource="{Binding OptionNames}"
+                              IsEditable="True" StaysOpenOnEdit="True"
+                              KeyDown="TextBox_KeyDown"
+                              Loaded="TextBox_VisibilityChanged"
+                              GotKeyboardFocus="ComboBox_GotFocus">
                         <ComboBox.ItemTemplate>
                             <DataTemplate DataType="{x:Type system:String}">
-                                <TextBlock Text="{Binding .}" />
+                                <TextBlock Text="{Binding .}"
+                                           Foreground="{DynamicResource Foreground}" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type local:ArrayMarshaller}">
-                    <Grid>
+                    <Grid> 
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" MinWidth="10" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="5"
-                                   Text="Length: " />
+                                   Text="Length: "
+                                   Foreground="{DynamicResource Foreground}" />
                         <TextBox Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="5"
                                  PreviewTextInput="ValidateInt"
+                                 GotKeyboardFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown"
+                                 KeyDown="TextBox_KeyDown"
+                                 Loaded="TextBox_VisibilityChanged"
+                                 Foreground="{DynamicResource Foreground}"
                                  Text="{Binding Length, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource IntToString}}" />
                     </Grid>
                 </DataTemplate>

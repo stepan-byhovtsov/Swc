@@ -2,6 +2,7 @@ using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using Swc.Core.Attributes;
 using Swc.Template;
 
@@ -39,6 +40,11 @@ public partial class CreationInspector : UserControl
 
    private static Marshaller? InstantiateMarshaller(object? obj, Type type, ObjectPresentation presentation)
    {
+      if (presentation.IsEditable is false)
+      {
+         return new ReadOnlyMarshaller(obj);
+      }
+      
       if (obj is string)
       {
          return new StringMarshaller(obj);

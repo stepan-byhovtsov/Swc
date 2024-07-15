@@ -179,4 +179,11 @@ public partial class MainWindow : Window
       }
       
    }
+
+   private void Refresh(object sender, ExecutedRoutedEventArgs e)
+   {
+      var was = Inspector.Creation;
+      Inspector.Creation = new SwcObject();
+      Inspector.Creation = was;
+   }
 }

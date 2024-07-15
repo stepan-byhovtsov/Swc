@@ -1,15 +1,14 @@
 using System.Collections.ObjectModel;
-using System.Text.Json.Nodes;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
-using DnsClient;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Swc.Core.Serialization.Json;
 using Swc.Template;
 using Swc.WpfClient.Controls;
+using Swc.WpfClient.Windows.Dialog;
+using PropertyPath = Swc.Core.Helpers.PropertyPath;
 
 namespace Swc.WpfClient.Windows;
 
@@ -37,8 +36,8 @@ public partial class DatabaseObserverWindow : Window
    {
       Objects.Clear();
 
-      try
-      {
+      // try
+      // {
          FilterQuery query = new();
          foreach (var filter in Filters)
          {
@@ -59,11 +58,11 @@ public partial class DatabaseObserverWindow : Window
          {
             Objects.Add(MongoDb.FromBson(swcObject));
          }
-      }
-      catch (Exception exc)
-      {
-         MessageBox.Show(this, $"Invalid filters:\n{exc.Message}", "Error", MessageBoxButton.OK);
-      }
+      // }
+      // catch (Exception exc)
+      // {
+      //   MessageBox.Show(this, $"Invalid filters:\n{exc.Message}", "Error", MessageBoxButton.OK);
+      // }
    }
 
    private void ExitWindow(object sender, ExecutedRoutedEventArgs e)
@@ -90,6 +89,44 @@ public partial class DatabaseObserverWindow : Window
       while (FilterList.SelectedItems.Count > 0)
       {
          Filters.Remove((FilterDefinition) FilterList.SelectedItems[0]!);
+      }
+   }
+
+   private void ExportDiscordChallengeMessage(object sender, ExecutedRoutedEventArgs e)
+   {
+      DiscordChallengeMessageDialog dialog = new();
+      if (dialog.ShowDialog() == true)
+      {
+         var propertyPaths = Filters.Where(c => c.SelectedFilter == 7).Select(filter => PropertyPath.FromVisualPath(filter.Property!)).ToArray();
+
+         string GenerateValue(SwcObject obj)
+         {
+            StringBuilder str = new();
+            foreach (var path in propertyPaths)
+            {
+               str.Append(path.GetValue(obj));
+               str.Append('x');
+            }
+
+            if (str.Length > 0)
+               str.Remove(str.Length - 1, 1);
+
+            return str.ToString();
+         }
+         
+         var objects = new (SwcObject, string)[Objects.Count];
+         for (var i = 0; i < objects.Length; i++)
+         {
+            objects[i] = (Objects[i], GenerateValue(Objects[i]));
+         }
+         
+         var message = DiscordChallengeResultExporter.ExportToDiscordMessage(
+            new DiscordChallengeResultParameters(objects)
+            {
+               ValueUnit = dialog.Unit,
+               CategoryName = dialog.CategoryName
+            });
+         Clipboard.SetText(message);
       }
    }
 }

@@ -28,6 +28,8 @@
         <CommandBinding Command="cmd:EditorCommands.DatabaseObserver" Executed="DbObserver"/>
         <CommandBinding Command="cmd:EditorCommands.SelectVehicleFile" Executed="DbSelectFile"/>
         
+        <CommandBinding Command="cmd:EditorCommands.Refresh" Executed="Refresh"/>
+        
         <CommandBinding Command="cmd:EditorCommands.OpenSettings" Executed="OpenSettings"/>
     </Window.CommandBindings>
     <WindowChrome.WindowChrome>
@@ -50,6 +52,7 @@
                     <MenuItem Header="Open" Icon="{StaticResource OpenFileIcon}" Command="cmd:EditorCommands.OpenFile"/>
                     <MenuItem Header="Save" Icon="{StaticResource SaveFileIcon}" Command="cmd:EditorCommands.SaveFile"/>
                     <MenuItem Header="Save as" Icon="{StaticResource SaveFileAsIcon}" Command="cmd:EditorCommands.SaveFileAs"/>
+                    <MenuItem Header="Refresh" Icon="{StaticResource DbRefreshIcon}" Command="cmd:EditorCommands.Refresh"/>
                     <Separator Style="{StaticResource MenuSeparator}"/>
                     
                     <MenuItem Header="Select vehicle file" Icon="{StaticResource SelectVehicleFileIcon}" Command="cmd:EditorCommands.SelectVehicleFile"/>

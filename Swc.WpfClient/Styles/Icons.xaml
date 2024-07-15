@@ -11,6 +11,7 @@
     <TextBlock x:Key="DownloadVehicleFromDb" Text="&#xE896;" FontFamily="Segoe MDL2 Assets"/>
     <TextBlock x:Key="Delete" Text="&#xE74D;" FontFamily="Segoe MDL2 Assets"/>
     <TextBlock x:Key="SettingsIcon" Text="&#xE713;" FontFamily="Segoe MDL2 Assets"/>
+    <TextBlock x:Key="AcceptIcon" Text="&#xE8FB;" FontFamily="Segoe MDL2 Assets"/>
     
     <TextBlock x:Key="EmptyIcon" Text="&#xF140;" FontFamily="Segoe MDL2 Assets"/>
 </ResourceDictionary>

@@ -20,6 +20,6 @@ public static class TypeHelper
    public static IEnumerable<PropertyInfo> GetShownProperties(this Type type)
    {
       return type.GetProperties()
-         .Where(c => c is {CanRead: true});
+         .Where(c => c is {CanRead: true} && c.GetCustomAttribute<NonEditableAttribute>() == null);
    }
 }

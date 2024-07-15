@@ -13,15 +13,18 @@
         WindowStyle="None"
         Style="{DynamicResource WindowTopStyle}"
         AllowsTransparency="True"
-        BorderThickness="1" BorderBrush="{DynamicResource SlightlyAccentedBackground}">
+        BorderThickness="5" BorderBrush="Transparent">
     <WindowChrome.WindowChrome>
-        <WindowChrome ResizeBorderThickness="10" CornerRadius="0" CaptionHeight="0" GlassFrameThickness="0" />
+        <WindowChrome ResizeBorderThickness="10" CornerRadius="45" CaptionHeight="0" GlassFrameThickness="0" />
     </WindowChrome.WindowChrome>
     <Window.CommandBindings>
         <CommandBinding Command="commands:WindowCommands.Exit" Executed="ExitWindow" />
         <CommandBinding Command="commands:DatabaseObserverCommands.Refresh" Executed="Refresh" />
         <CommandBinding Command="commands:DatabaseObserverCommands.AddFilter" Executed="AddFilter" />
-        <CommandBinding Command="commands:DatabaseObserverCommands.DeleteSelectedFilters" Executed="DeleteSelectedFilters" />
+        <CommandBinding Command="commands:DatabaseObserverCommands.DeleteSelectedFilters"
+                        Executed="DeleteSelectedFilters" />
+        <CommandBinding Command="commands:DatabaseObserverCommands.ExportDiscordChallengeMessage"
+                        Executed="ExportDiscordChallengeMessage" />
     </Window.CommandBindings>
     <Grid Background="Transparent">
         <Grid.RowDefinitions>
@@ -40,7 +43,14 @@
                               Command="commands:DatabaseObserverCommands.Refresh" />
                 </MenuItem>
                 <MenuItem Header="Filters">
-                    <MenuItem Header="Delete selected" Command="commands:DatabaseObserverCommands.DeleteSelectedFilters" Icon="{StaticResource Delete}"/>
+                    <MenuItem Header="Delete selected"
+                              Command="commands:DatabaseObserverCommands.DeleteSelectedFilters"
+                              Icon="{StaticResource Delete}" />
+                </MenuItem>
+                <MenuItem Header="Tools">
+                    <MenuItem Header="Discord challenge message"
+                              Command="commands:DatabaseObserverCommands.ExportDiscordChallengeMessage"
+                              Icon="{StaticResource Delete}" />
                 </MenuItem>
             </Menu>
             <Border Margin="3" wpfClient:EnableDragHelper.EnableDrag="True" Grid.Column="1"
@@ -54,58 +64,68 @@
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1">
-            <Grid>
+            <Grid Margin="5">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="280"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="280" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <ListView BorderThickness="0" Background="Transparent" Foreground="{DynamicResource Foreground}"
+                <ListBox BorderThickness="0" Background="Transparent" Foreground="{DynamicResource Foreground}"
                           x:Name="ItemList" SelectionChanged="Selected"
                           ItemsSource="{Binding Path=Objects, RelativeSource={RelativeSource AncestorType=local:DatabaseObserverWindow}}"
                           HorizontalContentAlignment="Stretch">
-                    <ListView.ItemTemplate>
+                    <ListBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type template:SwcObject}">
-                            <Border HorizontalAlignment="Stretch" CornerRadius="2" BorderThickness="1" BorderBrush="{DynamicResource Border}">
+                            <Border HorizontalAlignment="Stretch" CornerRadius="2" BorderThickness="1"
+                                    BorderBrush="{DynamicResource Border}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Orientation="Horizontal" Margin="5">
                                         <TextBlock Text="{Binding Name}" />
                                         <TextBlock Text=" by " Opacity="0.8" />
                                         <TextBlock Opacity="0.8" Text="{Binding AuthorInfo.Author}" />
                                     </StackPanel>
-                                    <TextBlock Margin="5" Grid.Column="1" HorizontalAlignment="Right" Opacity="0.8" Text="{Binding priority}" />
+                                    <TextBlock Margin="5" Grid.Column="1" HorizontalAlignment="Right" Opacity="0.8"
+                                               Text="{Binding priority}" />
                                 </Grid>
                             </Border>
                         </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                    </ListBox.ItemTemplate>
+                </ListBox>
                 <GridSplitter Grid.Column="1" Background="{DynamicResource MenuBarBackground}" Width="2"
-                              HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+                              HorizontalAlignment="Center" VerticalAlignment="Stretch" />
                 <StackPanel Grid.Column="2">
-                    <ListView BorderThickness="0" Background="Transparent" Foreground="{DynamicResource Foreground}"
-                              x:Name="FilterList"
-                              ItemsSource="{Binding Path=Filters, RelativeSource={RelativeSource AncestorType=local:DatabaseObserverWindow}}">
-                        <ListView.ItemTemplate>
+                    <ListBox BorderThickness="0" Background="Transparent" Foreground="{DynamicResource Foreground}"
+                             x:Name="FilterList"
+                             ItemsSource="{Binding Path=Filters, RelativeSource={RelativeSource AncestorType=local:DatabaseObserverWindow}}">
+                        <ListBox.ItemTemplate>
                             <DataTemplate DataType="{x:Type controls:FilterDefinition}">
                                 <StackPanel Orientation="Horizontal">
-                                    <ComboBox ItemsSource="{Binding PropertyNames}" SelectedIndex="{Binding SelectedProperty}"/>
-                                    <ComboBox Margin="10 0 0 0" ItemsSource="{Binding Filters}" SelectedIndex="{Binding SelectedFilter}"/>
-                                    <TextBox x:Name="SecondOperand" TextAlignment="Center" VerticalContentAlignment="Center" Margin="10 0 0 0" MinWidth="40" Visibility="Collapsed" Text="{Binding Argument, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <controls:CustomComboBox ItemsSource="{Binding PropertyNames}"
+                                              Value="{Binding Property, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <ComboBox Margin="10 0 0 0" ItemsSource="{Binding Filters}"
+                                              SelectedIndex="{Binding SelectedFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBox x:Name="SecondOperand" TextAlignment="Center"
+                                             VerticalContentAlignment="Center" Margin="10 0 0 0" MinWidth="40"
+                                             Visibility="Collapsed"
+                                             Foreground="{DynamicResource Foreground}"
+                                             Text="{Binding Argument, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
                                 <DataTemplate.Triggers>
                                     <DataTrigger Binding="{Binding Filter.RequiresSecondOperand}" Value="True">
-                                        <Setter TargetName="SecondOperand" Property="Visibility" Value="Visible"/>
+                                        <Setter TargetName="SecondOperand" Property="Visibility" Value="Visible" />
                                     </DataTrigger>
                                 </DataTemplate.Triggers>
                             </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                    <Button HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Top" Style="{StaticResource ButtonStyle}" Command="commands:DatabaseObserverCommands.AddFilter" >
-                        <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Text="+" FontSize="20"/>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Button HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                            Style="{StaticResource ButtonStyle}" Command="commands:DatabaseObserverCommands.AddFilter">
+                        <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center"
+                                   Text="+" FontSize="20" />
                     </Button>
                 </StackPanel>
             </Grid>
