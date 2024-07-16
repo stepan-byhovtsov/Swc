@@ -36,5 +36,7 @@ public enum Unit
    Containers,
    
    Seconds,
-   Minutes
+   Minutes,
+   
+   Percents
 }

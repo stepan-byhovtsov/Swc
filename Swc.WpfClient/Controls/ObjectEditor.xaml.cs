@@ -63,6 +63,13 @@ public partial class ObjectEditor : INotifyPropertyChanged
       var text = ((TextBox) sender).Text + e.Text;
       if (text.Length == 0)
          text = "0";
+      if (e.Text == "-")
+      {
+         if (text.Count(c => c == '-') > 1)
+            e.Handled = true;
+         else
+            return;
+      }
       if (!float.TryParse(text, CultureInfo.InvariantCulture, out _))
          e.Handled = true;
    }
@@ -72,6 +79,13 @@ public partial class ObjectEditor : INotifyPropertyChanged
       var text = ((TextBox) sender).Text + e.Text;
       if (text.Length == 0)
          text = "0";
+      if (e.Text == "-")
+      {
+         if (text.Count(c => c == '-') > 1)
+            e.Handled = true;
+         else
+            return;
+      }
       if (!int.TryParse(text, CultureInfo.InvariantCulture, out _))
          e.Handled = true;
    }

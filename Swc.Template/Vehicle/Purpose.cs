@@ -18,13 +18,28 @@ public abstract class Purpose
       public CargoBay[] CargoBays { get; set; } = Array.Empty<CargoBay>();   
    }
 
+   public class Repairing : Purpose
+   {
+      
+   }
+
    public class Resque : Purpose
    {
       
    }
 
+   public class Reconnaissance : Purpose
+   {
+      
+   }
+
+   public class Refueling : Purpose
+   {
+      public FuelType[] FuelTypes { get; set; } = [];
+   }
+
    public class Military : Purpose
    {
-      public Weapon[] Weapons { get; set; } = Array.Empty<Weapon>();
+      public Weapon[] Weapons { get; set; } = [];
    }
 }
