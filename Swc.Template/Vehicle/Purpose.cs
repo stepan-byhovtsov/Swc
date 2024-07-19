@@ -28,6 +28,11 @@ public abstract class Purpose
       
    }
 
+   public class Firefighting : Purpose
+   {
+      
+   }
+
    public class Reconnaissance : Purpose
    {
       

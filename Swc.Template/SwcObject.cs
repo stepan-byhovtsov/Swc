@@ -22,11 +22,13 @@ public class SwcObject
    [Singleline] public string Name { get; set; } = "";
    [Multiline] public string Description { get; set; } = "";
    
-   public AuthorInfo AuthorInfo { get; set; } = new();
+   public AuthorInfo[] AuthorInfos { get; set; } = [];
    public CreationType? Type { get; set; }
 
    [NonEditable] public string File { get; set; } = "";
+   public string TemplateVersion { get; } = "0.2.1";
    
    // ReSharper disable once InconsistentNaming
    [NonEditable] [NonSerializable] public float priority { get; set; }
+
 }

@@ -5,18 +5,29 @@ namespace Swc.Core.Helpers;
 
 public class PropertyPath
 {
-   public PropertyPath(string[] properties)
+   public PropertyPath(IProperty[] properties)
    {
       Properties = properties;
    }
 
    public static PropertyPath FromVisualPath(string str)
    {
-      var (_, realPath, _) = SimplifyPath(str, "");
+      var (args, left, _) = SimplifyPath(str, "");
 
-      var names = realPath.Split('.');
+      var names = args.PathInArrays;
+      if (names.Length == 0)
+         return new PropertyPath(left.Split('.').Select(name => (IProperty) new Property(name)).ToArray());
 
-      return new PropertyPath(names);
+      List<IProperty> properties = [];
+
+      foreach (var arrayDef in names)
+      {
+         properties.AddRange(arrayDef.path.Split('.').Select(name => new Property(name)));
+         properties.Add(new ArrayProperty(arrayDef.type));
+      }
+      properties.AddRange(names.Last().field.Split('.').Select(name => (IProperty) new Property(name)).ToArray());
+      
+      return new PropertyPath(properties.ToArray());
    }
    
 
@@ -25,8 +36,7 @@ public class PropertyPath
       var current = obj;
       foreach (var property in Properties)
       {
-         var propertyInfo = current.GetType().GetProperty(property);
-         current = propertyInfo == null ? current.GetType().GetField(property)!.GetValue(current) : propertyInfo.GetValue(current);
+         current = property.GetValue(current);
          if (current == null)
             break;
       }
@@ -34,7 +44,7 @@ public class PropertyPath
       return current;
    }
 
-   public string[] Properties { get; }
+   public IProperty[] Properties { get; }
    
    public static (QueryArguments args, string leftOperand, string rightOperand) SimplifyPath(string leftOperand, string rightOperand)
    {
@@ -69,6 +79,33 @@ public class PropertyPath
       }
 
       return (args, leftOperand, rightOperand);
+   }
+}
+
+public interface IProperty
+{
+   public object? GetValue(object obj);
+}
+
+public class Property(string name) : IProperty
+{
+   public string Name { get; } = name;
+
+   public object? GetValue(object obj)
+   {
+      var propertyInfo = obj.GetType().GetProperty(Name);
+      return propertyInfo == null ? obj.GetType().GetField(Name)!.GetValue(obj) : propertyInfo.GetValue(obj);
+   }
+}
+
+public class ArrayProperty(string type) : IProperty
+{
+   public string Type { get; } = type;
+
+   public object? GetValue(object obj)
+   {
+      var array = (Array) obj;
+      return array.Cast<object?>().FirstOrDefault(item => item!.GetType().Name == Type);
    }
 }
 

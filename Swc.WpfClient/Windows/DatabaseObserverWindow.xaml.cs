@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Swc.MongoMigrationTemplate.Tools;
 using Swc.Template;
 using Swc.WpfClient.Controls;
 using Swc.WpfClient.Windows.Dialog;
@@ -56,7 +57,7 @@ public partial class DatabaseObserverWindow : Window
             MongoDb.Objects.Aggregate(new PipelineStagePipelineDefinition<BsonDocument, BsonDocument>(stages));
          foreach (var swcObject in cursor.ToEnumerable())
          {
-            Objects.Add(MongoDb.FromBson(swcObject));
+            Objects.Add(MongoDb.FromBson(MigrationTool.Migrate(swcObject!, new SwcObject().TemplateVersion)!));
          }
       // }
       // catch (Exception exc)

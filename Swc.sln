@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Swc.Template", "Swc.Templat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Swc.WpfClient", "Swc.WpfClient\Swc.WpfClient.csproj", "{CE03ED0C-CB53-4D5C-87A6-D72DBF6629DA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Swc.MongoMigration", "Swc.MongoMigration\Swc.MongoMigration.csproj", "{3F7F0DE7-13E5-4D61-B73D-7B63ABFEE96D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{CE03ED0C-CB53-4D5C-87A6-D72DBF6629DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE03ED0C-CB53-4D5C-87A6-D72DBF6629DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE03ED0C-CB53-4D5C-87A6-D72DBF6629DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F7F0DE7-13E5-4D61-B73D-7B63ABFEE96D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F7F0DE7-13E5-4D61-B73D-7B63ABFEE96D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F7F0DE7-13E5-4D61-B73D-7B63ABFEE96D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F7F0DE7-13E5-4D61-B73D-7B63ABFEE96D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

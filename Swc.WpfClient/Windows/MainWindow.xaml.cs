@@ -16,28 +16,28 @@ namespace Swc.WpfClient;
 public partial class MainWindow : Window
 {
    public MongoDbHelper MongoDb { get; } = new();
-   
+
    private readonly ISwcSerializer _serializer = new SwcJsonSerializer(); // new SwcXmlSerializer(typeof(Creation));
 
    public static readonly DependencyProperty FileNameProperty =
       DependencyProperty.Register(nameof(FileName), typeof(string), typeof(MainWindow));
-   
+
    public DatabaseObserverWindow? DatabaseObserverWindow { get; private set; }
    public SettingsWindow? SettingsWindow { get; private set; }
-   
+
    public string FileName
    {
       get => (string) GetValue(FileNameProperty);
       set => SetValue(FileNameProperty, value);
    }
-   
+
    public MainWindow()
    {
       InitializeComponent();
       UpdateSystemButtonsVisibility();
       NewFile(null!, null!);
    }
-   
+
    #region Window commands
 
    protected override void OnStateChanged(EventArgs e)
@@ -46,7 +46,7 @@ public partial class MainWindow : Window
       UpdateSystemButtonsVisibility();
    }
 
-   
+
    private void UpdateSystemButtonsVisibility()
    {
       if (WindowState == WindowState.Maximized)
@@ -60,7 +60,7 @@ public partial class MainWindow : Window
          MaximizeButton.Visibility = Visibility.Visible;
       }
    }
-   
+
    private void ExitWindow(object sender, ExecutedRoutedEventArgs e)
    {
       Close();
@@ -88,7 +88,7 @@ public partial class MainWindow : Window
    private void NewFile(object sender, ExecutedRoutedEventArgs e)
    {
       FileName = "";
-      Inspector.Object = new SwcObject {AuthorInfo = SettingsWindow.AuthorInfo };
+      Inspector.Object = new SwcObject {AuthorInfos = [SettingsWindow.AuthorInfo]};
    }
 
    private void OpenFile(object sender, ExecutedRoutedEventArgs e)
@@ -96,7 +96,7 @@ public partial class MainWindow : Window
       var dialog = new OpenFileDialog();
       dialog.Filter = "SWC save (*.json)|*.json";
       if (!dialog.ShowDialog()!.Value) return;
-      
+
       using var stream = dialog.OpenFile();
       Inspector.Object = (SwcObject) _serializer.Deserialize(typeof(SwcObject), stream)!;
       FileName = dialog.FileName;
@@ -119,23 +119,23 @@ public partial class MainWindow : Window
       var dialog = new SaveFileDialog();
       dialog.Filter = "SWC save (*.json)|*.json";
       if (dialog.ShowDialog() != true) return;
-      
+
       FileName = dialog.FileName;
       SaveFile();
    }
 
    private void SaveFile()
    {
-      using var stream = new FileStream(FileName, FileMode.Create); 
+      using var stream = new FileStream(FileName, FileMode.Create);
       _serializer.Serialize(Inspector.Object!, typeof(SwcObject), stream);
       stream.Flush();
    }
-   
+
    private async void SaveToDb(object sender, ExecutedRoutedEventArgs e)
    {
-       await MongoDb.SaveToDb((SwcObject) Inspector.Object!);
+      await MongoDb.SaveToDb((SwcObject) Inspector.Object!);
    }
-   
+
    #endregion
 
    private void DbObserver(object sender, ExecutedRoutedEventArgs e)
@@ -146,7 +146,7 @@ public partial class MainWindow : Window
       DatabaseObserverWindow.Refresh();
       DatabaseObserverWindow.Show();
    }
-   
+
    private void OpenSettings(object sender, ExecutedRoutedEventArgs e)
    {
       if (SettingsWindow is null || !SettingsWindow.IsLoaded)
@@ -162,7 +162,7 @@ public partial class MainWindow : Window
       if (fileDialog.ShowDialog() == true)
       {
          var file = await File.ReadAllTextAsync(fileDialog.FileName);
-         ((SwcObject)Inspector.Object!).File = file;
+         ((SwcObject) Inspector.Object!).File = file;
          await MongoDb.UploadFile((SwcObject) Inspector.Object);
       }
    }
@@ -170,14 +170,13 @@ public partial class MainWindow : Window
    private async void DownloadFromDb(object sender, ExecutedRoutedEventArgs e)
    {
       await MongoDb.DownloadFile((SwcObject) Inspector.Object!);
-      
+
       SaveFileDialog fileDialog = new SaveFileDialog();
       fileDialog.Filter = "Stormworks vehicle save (*.xml)|*.xml";
       if (fileDialog.ShowDialog() == true)
       {
          await File.WriteAllTextAsync(fileDialog.FileName, ((SwcObject) Inspector.Object!).File);
       }
-      
    }
 
    private void Refresh(object sender, ExecutedRoutedEventArgs e)

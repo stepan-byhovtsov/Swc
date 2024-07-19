@@ -10,6 +10,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Swc.Core\Swc.Core.csproj" />
+      <ProjectReference Include="..\Swc.MongoMigration\Swc.MongoMigration.csproj" />
       <ProjectReference Include="..\Swc.Template\Swc.Template.csproj" />
     </ItemGroup>
 
@@ -33,6 +34,14 @@
         <Generator>SettingsSingleFileGenerator</Generator>
         <LastGenOutput>Settings.Designer.cs</LastGenOutput>
       </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Page Update="Windows\MainWindow.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
     </ItemGroup>
 
 </Project>

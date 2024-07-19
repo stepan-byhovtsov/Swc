@@ -1,8 +1,15 @@
 ﻿namespace Swc.Template.Vehicle.Survivability;
 
-public class CriticalSpot
+public abstract class CriticalSpot
 {
-   public CriticalSpotType? CriticalSpotType { get; set; }
+   public class Batteries : CriticalSpot { }
+   public class Controllers : CriticalSpot { }
+   public class Mobility : CriticalSpot { }
+   public class Buoyancy : CriticalSpot { }
+   public class Ammo : CriticalSpot { }
+   public class Weapon : CriticalSpot { }
+   public class Pilot : CriticalSpot { }
+   public class Navigation : CriticalSpot { }
    
    [Unit(Unit.Blocks)] [Int] public Vector3 Bounds { get; set; }
    [Unit(Unit.Blocks)] public Vector3 Center { get; set; }
