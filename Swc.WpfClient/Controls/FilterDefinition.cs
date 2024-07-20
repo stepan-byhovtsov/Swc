@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text;
 using System.Windows;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -10,117 +11,444 @@ namespace Swc.WpfClient.Controls;
 public class FilterDefinition : DependencyObject
 {
    public static readonly DependencyProperty PropertyProperty =
-      DependencyProperty.Register(nameof(Property), typeof(string), typeof(FilterDefinition));
+      DependencyProperty.Register(nameof(Property), typeof(Query), typeof(FilterDefinition));
 
    public static readonly DependencyProperty FilterProperty =
       DependencyProperty.Register(nameof(Filter), typeof(FilterOperation), typeof(FilterDefinition));
-   
+
    public static readonly DependencyProperty ArgumentProperty =
       DependencyProperty.Register(nameof(Argument), typeof(string), typeof(FilterDefinition));
 
-   public string[] PropertyNames { get; }
+   public Query[] Properties { get; }
+
+   #region Filters
+
+   private static void ExistsFilter(FilterQuery query, Query left, string _)
+   {
+      var filter = new StringBuilder();
+
+      filter.Append('{');
+
+      var currentProperty = new StringBuilder();
+      var closingBraces = 1;
+      foreach (var elem in left.Elements)
+      {
+         switch (elem)
+         {
+            case QueryTypeElement type:
+               filter.AppendAll('"', currentProperty, ".@Type", '"', ':', '"', type.TypeName, '"', ',');
+               break;
+            case QueryArrayAnyElement:
+               filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+               currentProperty.Clear();
+               closingBraces += 2;
+               break;
+            case QueryArrayTypeElement arrayType:
+               filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+               filter.AppendAll('"', "@Type", '"', ':', '"', arrayType.TypeName, '"', ',');
+               currentProperty.Clear();
+               closingBraces += 2;
+               break;
+            case QueryPropertyElement element:
+               if (currentProperty.Length > 0)
+                  currentProperty.Append('.');
+               currentProperty.AppendAll(element.PropertyName);
+               break;
+         }
+      }
+
+      for (int i = 0; i < closingBraces; i++) filter.Append('}');
+
+      var @string = filter.ToString();
+      query.Filters.Add(@string);
+   }
 
    public FilterOperation[] Filters { get; } =
    [
-      // TODO: Handle multidimensional arrays
-      
-      new("exists", false, (query, left, _, args) =>
+      new("exists", false, ExistsFilter),
+      new("is greater than", true, (query, left, right) =>
       {
-         if (args.ShouldSpecifyType)
+         var filter = new StringBuilder();
+
+         filter.Append('{');
+
+         var currentProperty = new StringBuilder();
+         var closingBraces = 1;
+
+         bool handled = false;
+
+         foreach (var elem in left.Elements)
          {
-            query.Filters.Add($"{{\"{left}.@Type\":\"{args.SpecificType}\"}}");
-         }
-         else
-         {
-            query.Filters.Add($"{{\"{left}\":{{$exists:true}}}}");
-         }
-      }),
-      new("is greater than", true, (query, left, right, args) =>
-      {
-         var operation = $"{{$gt:{right}}}";
-         if (args.ShouldWorkWithArrayLength)
-         {
-            left = $"{left}.{int.Parse(right)}";
-            operation = $"{{$exists:true}}";
-         }
-         query.Filters.Add($"{{\"{left}\":{operation}}}");
-      }),
-      new("is less than", true, (query, left, right, args) =>
-      {
-         var operation = $"{{$lt:{right}}}";
-         if (args.ShouldWorkWithArrayLength)
-         {
-            left = $"{left}.{int.Parse(right)-1}";
-            operation = $"{{$exists:false}}";
-         }
-         query.Filters.Add($"{{\"{left}\":{operation}}}");
-      }),
-      new("is equals to", true, (query, left, right, args) =>
-      {
-         var operation = $"{{eq:{right}}}";
-         if (args.ShouldWorkWithArrayLength)
-         {
-            operation = $"{{$size:{right}}}";
-         }
-         query.Filters.Add($"{{\"{left}\":{operation}}}");
-      }),
-      new("is greater or equals to", true, (query, left, right, args) =>
-      {
-         var operation = $"{{$gte:{right}}}";
-         if (args.ShouldWorkWithArrayLength)
-         {
-            left = $"{left}.{int.Parse(right)-1}";
-            operation = $"{{$exists:true}}";
-         }
-         query.Filters.Add($"{{\"{left}\":{operation}}}");
-      }),
-      new("is less or equals to", true, (query, left, right, args) =>
-      {
-         var operation = $"{{$lte:{right}}}";
-         if (args.ShouldWorkWithArrayLength)
-         {
-            left = $"{left}.{int.Parse(right)}";
-            operation = $"{{$exists:false}}";
-         }
-         query.Filters.Add($"{{\"{left}\":{operation}}}");
-      }),
-      new("is not equals to", true, (query, left, right, args) =>
-      {
-         var operation = $"{{ne:{right}}}";
-         if (args.ShouldWorkWithArrayLength)
-         {
-            operation = $"{{$not:{{$size:{right}}}}}";
-         }
-         query.Filters.Add($"{{\"{left}\":{operation}}}");
-      }),
-      new("sort with coefficient", true, (query, left, right, args) =>
-      {
-         // TODO: Handle arrays without type specifications
-         
-         if (args.PathInArrays.Length != 0)
-         {
-            left = $"\"${args.PathInArrays[0].path}\"";
-            foreach (var (path, type, field) in args.PathInArrays)
+            switch (elem)
             {
-               left = $"{{$arrayElemAt: [{{ $filter:{{input:{left},cond:{{\"@Type\":\"{type}\"}}}} }},0]}}";
-               foreach (var subPath in field.Split('.'))
-               {
-                  left = $"{{ $getField: {{input:{left}, field:\"{subPath}\"}}}}";
-               }
+               case QueryTypeElement type:
+                  filter.AppendAll('"', currentProperty, ".@Type", '"', ':', '"', type.TypeName, '"', ',');
+                  break;
+               case QueryArrayLengthElement:
+                  filter.AppendAll('"', currentProperty, '.', right, '"', ':', "{$exists:true}");
+                  currentProperty.Clear();
+                  handled = true;
+                  break;
+               case QueryArrayAnyElement:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+                  currentProperty.Clear();
+                  closingBraces += 2;
+                  break;
+               case QueryArrayTypeElement arrayType:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+                  filter.AppendAll('"', "@Type", '"', ':', '"', arrayType.TypeName, '"', ',');
+                  currentProperty.Clear();
+                  closingBraces += 2;
+                  break;
+               case QueryPropertyElement element:
+                  if (currentProperty.Length > 0)
+                     currentProperty.Append('.');
+                  currentProperty.Append(element.PropertyName);
+                  break;
+            }
+
+            if (handled)
+               break;
+         }
+
+         if (!handled)
+         {
+            filter.AppendAll('"', currentProperty, '"', ':', "{$gt:", right, '}', ',');
+         }
+
+         for (int i = 0; i < closingBraces; i++) filter.Append('}');
+
+         var @string = filter.ToString();
+         query.Filters.Add(@string);
+      }),
+      new("is less than", true, (query, left, right) =>
+      {
+         var filter = new StringBuilder();
+
+         filter.Append('{');
+
+         var currentProperty = new StringBuilder();
+         var closingBraces = 1;
+
+         bool handled = false;
+
+         foreach (var elem in left.Elements)
+         {
+            switch (elem)
+            {
+               case QueryTypeElement type:
+                  filter.AppendAll('"', currentProperty, ".@Type", '"', ':', '"', type.TypeName, '"', ',');
+                  break;
+               case QueryArrayLengthElement:
+                  filter.AppendAll('"', currentProperty, '.', int.Parse(right) - 1, '"', ':', "{$exists:false}");
+                  currentProperty.Clear();
+                  handled = true;
+                  break;
+               case QueryArrayAnyElement:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+                  currentProperty.Clear();
+                  closingBraces += 2;
+                  break;
+               case QueryArrayTypeElement arrayType:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+                  filter.AppendAll('"', "@Type", '"', ':', '"', arrayType.TypeName, '"', ',');
+                  currentProperty.Clear();
+                  closingBraces += 2;
+                  break;
+               case QueryPropertyElement element:
+                  if (currentProperty.Length > 0)
+                     currentProperty.Append('.');
+                  currentProperty.Append(element.PropertyName);
+                  break;
+            }
+
+            if (handled)
+               break;
+         }
+
+         if (!handled)
+         {
+            filter.AppendAll('"', currentProperty, '"', ':', "{$lt:", right, '}', ',');
+         }
+
+         for (int i = 0; i < closingBraces; i++) filter.Append('}');
+
+         var @string = filter.ToString();
+         query.Filters.Add(@string);
+      }),
+      new("is equals to", true, (query, left, right) =>
+      {
+         var filter = new StringBuilder();
+
+         filter.Append('{');
+
+         var currentProperty = new StringBuilder();
+         var closingBraces = 1;
+
+         bool handled = false;
+
+         foreach (var elem in left.Elements)
+         {
+            switch (elem)
+            {
+               case QueryTypeElement type:
+                  filter.AppendAll('"', currentProperty, ".@Type", '"', ':', '"', type.TypeName, '"', ',');
+                  break;
+               case QueryArrayLengthElement:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$size:", right, '}');
+                  currentProperty.Clear();
+                  handled = true;
+                  break;
+               case QueryArrayAnyElement:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+                  currentProperty.Clear();
+                  closingBraces += 2;
+                  break;
+               case QueryArrayTypeElement arrayType:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+                  filter.AppendAll('"', "@Type", '"', ':', '"', arrayType.TypeName, '"', ',');
+                  currentProperty.Clear();
+                  closingBraces += 2;
+                  break;
+               case QueryPropertyElement element:
+                  if (currentProperty.Length > 0)
+                     currentProperty.Append('.');
+                  currentProperty.Append(element.PropertyName);
+                  break;
+            }
+
+            if (handled)
+               break;
+         }
+
+         if (!handled)
+         {
+            filter.AppendAll('"', currentProperty, '"', ':', "{$eq:", right, '}', ',');
+         }
+
+         for (int i = 0; i < closingBraces; i++) filter.Append('}');
+
+         var @string = filter.ToString();
+         query.Filters.Add(@string);
+      }),
+      new("is greater or equals to", true, (query, left, right) =>
+      {
+         var filter = new StringBuilder();
+
+         filter.Append('{');
+
+         var currentProperty = new StringBuilder();
+         var closingBraces = 1;
+
+         bool handled = false;
+
+         foreach (var elem in left.Elements)
+         {
+            switch (elem)
+            {
+               case QueryTypeElement type:
+                  filter.AppendAll('"', currentProperty, ".@Type", '"', ':', '"', type.TypeName, '"', ',');
+                  break;
+               case QueryArrayLengthElement:
+                  filter.AppendAll('"', currentProperty, '.', int.Parse(right) - 1, '"', ':', "{$exists:true}");
+                  currentProperty.Clear();
+                  handled = true;
+                  break;
+               case QueryArrayAnyElement:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+                  currentProperty.Clear();
+                  closingBraces += 2;
+                  break;
+               case QueryArrayTypeElement arrayType:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+                  filter.AppendAll('"', "@Type", '"', ':', '"', arrayType.TypeName, '"', ',');
+                  currentProperty.Clear();
+                  closingBraces += 2;
+                  break;
+               case QueryPropertyElement element:
+                  if (currentProperty.Length > 0)
+                     currentProperty.Append('.');
+                  currentProperty.Append(element.PropertyName);
+                  break;
+            }
+
+            if (handled)
+               break;
+         }
+
+         if (!handled)
+         {
+            filter.AppendAll('"', currentProperty, '"', ':', "{$gte:", right, '}', ',');
+         }
+
+         for (int i = 0; i < closingBraces; i++) filter.Append('}');
+
+         var @string = filter.ToString();
+         query.Filters.Add(@string);
+      }),
+      new("is less or equals to", true, (query, left, right) =>
+      {
+         var filter = new StringBuilder();
+
+         filter.Append('{');
+
+         var currentProperty = new StringBuilder();
+         var closingBraces = 1;
+
+         bool handled = false;
+
+         foreach (var elem in left.Elements)
+         {
+            switch (elem)
+            {
+               case QueryTypeElement type:
+                  filter.AppendAll('"', currentProperty, ".@Type", '"', ':', '"', type.TypeName, '"', ',');
+                  break;
+               case QueryArrayLengthElement:
+                  filter.AppendAll('"', currentProperty, '.', int.Parse(right), '"', ':', "{$exists:false}");
+                  currentProperty.Clear();
+                  handled = true;
+                  break;
+               case QueryArrayAnyElement:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+                  currentProperty.Clear();
+                  closingBraces += 2;
+                  break;
+               case QueryArrayTypeElement arrayType:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+                  filter.AppendAll('"', "@Type", '"', ':', '"', arrayType.TypeName, '"', ',');
+                  currentProperty.Clear();
+                  closingBraces += 2;
+                  break;
+               case QueryPropertyElement element:
+                  if (currentProperty.Length > 0)
+                     currentProperty.Append('.');
+                  currentProperty.Append(element.PropertyName);
+                  break;
+            }
+
+            if (handled)
+               break;
+         }
+
+         if (!handled)
+         {
+            filter.AppendAll('"', currentProperty, '"', ':', "{$lte:", right, '}', ',');
+         }
+
+         for (int i = 0; i < closingBraces; i++) filter.Append('}');
+
+         var @string = filter.ToString();
+         query.Filters.Add(@string);
+      }),
+      new("is not equals to", true, (query, left, right) =>
+      {
+         var filter = new StringBuilder();
+
+         filter.Append('{');
+
+         var currentProperty = new StringBuilder();
+         var closingBraces = 1;
+
+         bool handled = false;
+
+         foreach (var elem in left.Elements)
+         {
+            switch (elem)
+            {
+               case QueryTypeElement type:
+                  filter.AppendAll('"', currentProperty, ".@Type", '"', ':', '"', type.TypeName, '"', ',');
+                  break;
+               case QueryArrayLengthElement:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$not:{$size:", right, "}}");
+                  currentProperty.Clear();
+                  handled = true;
+                  break;
+               case QueryArrayAnyElement:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+                  currentProperty.Clear();
+                  closingBraces += 2;
+                  break;
+               case QueryArrayTypeElement arrayType:
+                  filter.AppendAll('"', currentProperty, '"', ':', "{$elemMatch:{");
+                  filter.AppendAll('"', "@Type", '"', ':', '"', arrayType.TypeName, '"', ',');
+                  currentProperty.Clear();
+                  closingBraces += 2;
+                  break;
+               case QueryPropertyElement element:
+                  if (currentProperty.Length > 0)
+                     currentProperty.Append('.');
+                  currentProperty.Append(element.PropertyName);
+                  break;
+            }
+
+            if (handled)
+               break;
+         }
+
+         if (!handled)
+         {
+            filter.AppendAll('"', currentProperty, '"', ':', "{$ne:", right, '}', ',');
+         }
+
+         for (int i = 0; i < closingBraces; i++) filter.Append('}');
+
+         var @string = filter.ToString();
+         query.Filters.Add(@string);
+      }),
+      new("sort with coefficient", true, (query, left, right) =>
+      {
+         ExistsFilter(query, left, right);
+
+         var filter = new StringBuilder();
+
+         var currentProperty = new StringBuilder();
+         var braces = new Stack<char>();
+
+         bool handled = false;
+
+         filter.AppendAll("{$set:{\"priority\":{$sum:[\"$priority\",{$multiply:[", right, ",");
+         braces.PushAll('{', '{', '{', '[', '{', '[');
+
+         StringBuilder obj = new();
+
+         for (var i = 0; i < left.Elements.Count; i++)
+         {
+            var elem = left.Elements[i];
+            switch (elem)
+            {
+               case QueryPropertyElement propElem:
+                  if (i == 0)
+                  {
+                     obj.AppendAll("'$", propElem.PropertyName, "'");
+                  }
+                  else
+                  {
+                     obj = new StringBuilder().AppendAll("{$getField:{input:", obj, ",field:'", propElem.PropertyName,
+                        "'}}");
+                  }
+
+                  break;
+               case QueryArrayTypeElement typeElem:
+                  obj = new StringBuilder().AppendAll("{$arrayElemAt:[{$filter:{input:", obj,
+                     ",as:'e',cond:{$eq:['$$e.@Type','", typeElem.TypeName, "']}}},0]}");
+                  break;
+               case QueryArrayLengthElement:
+                  obj = new StringBuilder().AppendAll("{$size:", obj, "}");
+                  break;
             }
          }
-         if (args.ShouldWorkWithArrayLength)
-         {
-            left = $"{{$size:\"${left}\"}}";
-         }
-         else {
-            if (args.PathInArrays.Length == 0) {
-               left = $"\"${left}\"";
-            }  
-         }
-         query.Sorts.Add(new JsonPipelineStageDefinition<BsonDocument, BsonDocument>($"{{$set:{{\"priority\":{{$sum:[\"$priority\",{{$multiply:[{right},{left}]}}]}}}}}}"));
+
+         filter.Append(obj);
+
+         while (braces.Count > 0) filter.Append(braces.Pop().ClosingBrace());
+
+         var @string = filter.ToString();
+         query.Sorts.Add(new JsonPipelineStageDefinition<BsonDocument, BsonDocument>(@string));
       })
    ];
+
+   #endregion
 
    private int _selectedProperty = -1;
    private int _selectedFilter = -1;
@@ -128,64 +456,88 @@ public class FilterDefinition : DependencyObject
    public FilterDefinition()
    {
       var rootType = typeof(SwcObject);
-      var list = new List<string>();
-      AddAllPropertiesOf(rootType, list);
-      PropertyNames = list.ToArray();
+      var list = new List<Query>();
+      AddAllPropertiesOf(rootType, list, new Query());
+      Properties = list.ToArray();
    }
 
-   private void AddAllPropertiesOf(Type type, List<string> list, string prefix = "")
+   private void AddAllPropertiesOf(Type type, List<Query> list, Query query)
    {
       foreach (var property in type.GetShownProperties())
       {
-         AddProperty(property.PropertyType, list, prefix + property.Name);
+         var propertyType = property.PropertyType;
+         AddProperty(property.Name, propertyType, list, query);
       }
    }
 
-   private void AddProperty(Type type, List<string> list, string prefix)
+   private void AddProperty(string propertyName, Type propertyType, List<Query> list, Query query)
    {
-      if (type.IsAbstract)
+      if (propertyType.IsAbstract)
       {
-         foreach (var nestedType in type.GetNestedTypes())
+         var newQuery = query.BranchAdd(new QueryPropertyElement(propertyName));
+         AddAllPropertiesOf(propertyType, list, newQuery);
+         foreach (var nestedType in propertyType.GetNestedTypes())
          {
-            var name2 = $"{prefix}({nestedType.Name})";
-            list.Add(name2);
-            AddProperty(nestedType, list, name2);
+            list.Add(newQuery.BranchAdd(new QueryTypeElement(nestedType.Name)));
+            AddAllPropertiesOf(nestedType, list, newQuery.BranchAdd(new QueryTypeElement(nestedType.Name)));
          }
 
          return;
       }
 
-      if (type == typeof(Vector3))
+      if (propertyType.IsArray)
       {
-         list.Add($"{prefix}.X");
-         list.Add($"{prefix}.Y");
-         list.Add($"{prefix}.Z");
-         return;
-      }
-      
-      if (type == typeof(Vector2))
-      {
-         list.Add($"{prefix}.X");
-         list.Add($"{prefix}.Y");
-         return;
-      }
-      
-      if (type.IsArray)
-      {
-         list.Add($"{prefix}#Count");
-         var name2 = $"{prefix}[Any]";
-         var elementType = type.GetElementType()!;
-         AddProperty(elementType, list, name2);
+         var arrayQuery = query.BranchAdd(new QueryPropertyElement(propertyName));
+         list.Add(arrayQuery.BranchAdd(new QueryArrayLengthElement()));
+
+         var elementType = propertyType.GetElementType()!;
+         if (elementType.IsAbstract)
+         {
+            foreach (var nestedType in elementType.GetNestedTypes())
+            {
+               var newQuery = arrayQuery.BranchAdd(new QueryArrayTypeElement(nestedType.Name));
+               list.Add(newQuery);
+               AddAllPropertiesOf(nestedType, list, newQuery);
+            }
+         }
+
+         var firstQuery = arrayQuery.BranchAdd(new QueryArrayIndexElement(0));
+         list.Add(firstQuery);
+         AddAllPropertiesOf(elementType, list, firstQuery);
+
+         var anyQuery = arrayQuery.BranchAdd(new QueryArrayAnyElement());
+         list.Add(anyQuery);
+         AddAllPropertiesOf(elementType, list, anyQuery);
+
+         var allQuery = arrayQuery.BranchAdd(new QueryArrayAllElement());
+         list.Add(allQuery);
+         AddAllPropertiesOf(elementType, list, allQuery);
+
          return;
       }
 
-      if (!ObjectPresentation.IsSimpleType(type))
+      if (propertyType == typeof(Vector2))
       {
-         AddAllPropertiesOf(type, list, prefix + ".");
+         list.Add(query.BranchAdd(new QueryPropertyElement(propertyName)).Add(new QueryPropertyElement("X")));
+         list.Add(query.BranchAdd(new QueryPropertyElement(propertyName)).Add(new QueryPropertyElement("Y")));
          return;
       }
 
-      list.Add(prefix);
+      if (propertyType == typeof(Vector3))
+      {
+         list.Add(query.BranchAdd(new QueryPropertyElement(propertyName)).Add(new QueryPropertyElement("X")));
+         list.Add(query.BranchAdd(new QueryPropertyElement(propertyName)).Add(new QueryPropertyElement("Y")));
+         list.Add(query.BranchAdd(new QueryPropertyElement(propertyName)).Add(new QueryPropertyElement("Z")));
+         return;
+      }
+
+      if (ObjectPresentation.IsSimpleType(propertyType))
+      {
+         list.Add(query.BranchAdd(new QueryPropertyElement(propertyName)));
+         return;
+      }
+
+      AddAllPropertiesOf(propertyType, list, query.BranchAdd(new QueryPropertyElement(propertyName)));
    }
 
    public int SelectedProperty
@@ -195,7 +547,7 @@ public class FilterDefinition : DependencyObject
       {
          if (SelectedProperty != value)
          {
-            Property = value == -1 ? null : PropertyNames[value];
+            Property = value == -1 ? null : Properties[value];
          }
 
          _selectedProperty = value;
@@ -216,9 +568,9 @@ public class FilterDefinition : DependencyObject
       }
    }
 
-   public string? Property
+   public Query? Property
    {
-      get => (string) GetValue(PropertyProperty);
+      get => (Query) GetValue(PropertyProperty);
       set => SetValue(PropertyProperty, value);
    }
 
@@ -228,7 +580,7 @@ public class FilterDefinition : DependencyObject
       set => SetValue(FilterProperty, value);
    }
 
-   public string Argument 
+   public string Argument
    {
       get => (string) GetValue(ArgumentProperty);
       set => SetValue(ArgumentProperty, value);

@@ -11,7 +11,7 @@ public class FilterOperation(string verb, bool requiresSecondOperand, FilterOper
    public string Verb { get; } = verb;
    public bool RequiresSecondOperand { get; } = requiresSecondOperand;
 
-   public delegate void QueryAction(FilterQuery query, string leftOperand, string rightOperand, QueryArguments args);
+   public delegate void QueryAction(FilterQuery query, Query leftOperand, string rightOperand);
 
    public QueryAction Action { get; } = action;
 
@@ -21,10 +21,9 @@ public class FilterOperation(string verb, bool requiresSecondOperand, FilterOper
       return Verb;
    }
 
-   public void Apply(FilterQuery query, string leftOperand, string rightOperand)
+   public void Apply(FilterQuery query, Query leftOperand, string rightOperand)
    {
-      (var args, leftOperand, rightOperand) = PropertyPath.SimplifyPath(leftOperand, rightOperand);
-      Action(query, leftOperand, rightOperand, args);
+      Action(query, leftOperand, rightOperand);
    }
 }
 

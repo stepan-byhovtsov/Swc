@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.ObjectModel;
-using System.Net.Mime;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace Swc.WpfClient.Controls;
+
+// Change custom combo box logic.
 
 public partial class CustomComboBox : UserControl
 {
@@ -26,7 +27,7 @@ public partial class CustomComboBox : UserControl
          return;
       foreach (var item in newValue)
       {
-         SelectedItems.Add(item?.ToString() ?? "null");
+         SelectedItems.Add(item);
       }
    }
    
@@ -35,8 +36,8 @@ public partial class CustomComboBox : UserControl
       if (newValue < 0 || newValue >= SelectedItems.Count)
          return;
       
-      SearchTextBox.Text = SelectedItems[newValue];
-      Value = Value;
+      SearchTextBox.Text = SelectedItems[newValue].ToString()!;
+      Value = SelectedItems[newValue];
    }
 
    public static readonly DependencyProperty SelectedIndexProperty =
@@ -48,10 +49,10 @@ public partial class CustomComboBox : UserControl
    }
 
    public static readonly DependencyProperty ValueProperty =
-      DependencyProperty.Register(nameof(Value), typeof(string), typeof(CustomComboBox));
+      DependencyProperty.Register(nameof(Value), typeof(object), typeof(CustomComboBox));
 
    public static readonly DependencyProperty SelectedItemsProperty = DependencyProperty.Register(nameof(SelectedItems),
-      typeof(ObservableCollection<string>), typeof(CustomComboBox));
+      typeof(ObservableCollection<object>), typeof(CustomComboBox));
 
    public IEnumerable ItemsSource
    {
@@ -59,9 +60,9 @@ public partial class CustomComboBox : UserControl
       set => SetValue(ItemsSourceProperty, value);
    }
 
-   public ObservableCollection<string> SelectedItems
+   public ObservableCollection<object> SelectedItems
    {
-      get => (ObservableCollection<string>) GetValue(SelectedItemsProperty);
+      get => (ObservableCollection<object>) GetValue(SelectedItemsProperty);
       set => SetValue(SelectedItemsProperty, value);
    }
 
@@ -71,9 +72,9 @@ public partial class CustomComboBox : UserControl
       set => SetValue(SelectedIndexProperty, value);
    }
    
-   public string Value
+   public object Value
    {
-      get => SearchTextBox.Text;
+      get => (object) GetValue(ValueProperty);
       set => SetValue(ValueProperty, value);
    }
 
@@ -93,14 +94,14 @@ public partial class CustomComboBox : UserControl
       Popup.IsOpen = false;
    }
 
-   private Stack<List<string>> _removedProperties = [];
+   private Stack<List<object>> _removedProperties = [];
 
    private void FilterOut()
    {
       var text = SearchTextBox.Text[0 .. SearchTextBox.SelectionStart];
       var propertiesToRemove = SelectedItems.Where(property =>
-         !property.StartsWith(text) &&
-         !property[(property.LastIndexOf('.') + 1)..].StartsWith(text)).ToList();
+         !property.ToString()!.StartsWith(text) &&
+         !property.ToString()![(property.ToString()!.LastIndexOf('.') + 1)..].StartsWith(text)).ToList();
       _removedProperties.Push(propertiesToRemove);
       foreach (var property in propertiesToRemove)
       {
@@ -134,10 +135,10 @@ public partial class CustomComboBox : UserControl
          {
             if (SelectedItems.Count > 0)
             {
-               if (SelectedItems[0].StartsWith(SearchTextBox.Text) && SearchTextBox.Text != SelectedItems[0])
+               if (SelectedItems[0].ToString()!.StartsWith(SearchTextBox.Text) && SearchTextBox.Text != SelectedItems[0].ToString())
                {
                   var caret = SearchTextBox.CaretIndex;
-                  SearchTextBox.Text = SelectedItems[0];
+                  SearchTextBox.Text = SelectedItems[0].ToString()!;
                   SearchTextBox.SelectionStart = caret;
                   SearchTextBox.SelectionLength = SearchTextBox.Text.Length - SearchTextBox.SelectionStart;
                }
@@ -164,7 +165,7 @@ public partial class CustomComboBox : UserControl
          if (SelectedItems.Count < 0)
             return;
          
-         SearchTextBox.Text = SelectedItems[SelectedIndex];
+         SearchTextBox.Text = SelectedItems[SelectedIndex].ToString()!;
          SearchTextBox.CaretIndex = SearchTextBox.Text.Length;
          SearchTextBox.SelectionLength = 0;
          e.Handled = true;

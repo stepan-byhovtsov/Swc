@@ -1,123 +1,157 @@
-﻿using System.Reflection;
+﻿using System.ComponentModel;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.Remoting;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Swc.Core.Helpers;
 
-public class PropertyPath
+
+public class Query
 {
-   public PropertyPath(IProperty[] properties)
+   public object GetValue(object obj)
    {
-      Properties = properties;
-   }
-
-   public static PropertyPath FromVisualPath(string str)
-   {
-      var (args, left, _) = SimplifyPath(str, "");
-
-      var names = args.PathInArrays;
-      if (names.Length == 0)
-         return new PropertyPath(left.Split('.').Select(name => (IProperty) new Property(name)).ToArray());
-
-      List<IProperty> properties = [];
-
-      foreach (var arrayDef in names)
+      foreach (var elem in Elements)
       {
-         properties.AddRange(arrayDef.path.Split('.').Select(name => new Property(name)));
-         properties.Add(new ArrayProperty(arrayDef.type));
+         switch (elem)
+         {
+            case QueryPropertyElement prop:
+               var type = obj.GetType();
+               var propertyInfo = type.GetProperty(prop.PropertyName);
+               if (propertyInfo == null)
+                  obj = type.GetField(prop.PropertyName)!.GetValue(obj)!;
+               else
+                  obj = propertyInfo.GetValue(obj)!;
+               
+               break;
+            case QueryArrayIndexElement:
+               var array1 = (Array) obj;
+               obj = array1.GetValue(0)!;
+               break;
+            case QueryArrayLengthElement:
+               var array2 = (Array) obj;
+               obj = array2.Length;
+               break;
+            case QueryArrayTypeElement prop:
+               var array = (Array) obj;
+               foreach (var item in array)
+               {
+                  if (item != null && item.GetType().Name == prop.TypeName)
+                  {
+                     obj = item;
+                     break;
+                  }
+               }
+               break;
+         }
+
       }
-      properties.AddRange(names.Last().field.Split('.').Select(name => (IProperty) new Property(name)).ToArray());
-      
-      return new PropertyPath(properties.ToArray());
+
+      return obj;
    }
    
-
-   public object? GetValue(object obj)
+   public List<QueryElement> Elements { get; set; } = [];
+   
+   public Query Clone()
    {
-      var current = obj;
-      foreach (var property in Properties)
-      {
-         current = property.GetValue(current);
-         if (current == null)
-            break;
-      }
-
-      return current;
+      return new Query {Elements = [..Elements]};
    }
 
-   public IProperty[] Properties { get; }
-   
-   public static (QueryArguments args, string leftOperand, string rightOperand) SimplifyPath(string leftOperand, string rightOperand)
+   public Query Add(QueryElement element)
    {
-      var args = new QueryArguments();
-      
-      var comment1 = new Regex(@"\[([^\.]*)\]");
-      var comment2 = new Regex(@"\(([^\.]*)\)");
+      Elements.Add(element);
+      return this;
+   }
 
-      var arrayComment = new Regex(@"\[Any\]\(([^\(]*)\)\.?");
-      var arrayDefs = arrayComment.Matches(leftOperand).ToArray();
-      var arrays = arrayComment.Split(leftOperand);
-      args.PathInArrays = new (string, string, string)[arrayDefs.Length];
-      for (int i = 0; i < arrayDefs.Length; i++)
+   public Query BranchAdd(QueryElement element)
+   {
+      return Clone().Add(element);
+   }
+   
+   public override string ToString()
+   {
+      var builder = new StringBuilder();
+      foreach (var element in Elements)
       {
-         args.PathInArrays[i] = (comment2.Replace(arrays[i*2], ""), arrayDefs[i].Groups[1].Value, comment2.Replace(arrays[i*2+2],""));
-      }
-      
-      leftOperand = comment1.Replace(leftOperand, "");
-      
-      if (leftOperand.EndsWith(')'))
-      {
-         var substring = leftOperand[(leftOperand.LastIndexOf('(')+1) .. ^1];
-         args.ShouldSpecifyType = true;
-         args.SpecificType = substring;
-      }
-      
-      leftOperand = comment2.Replace(leftOperand, "");
-      if (leftOperand.EndsWith("#Count"))
-      {
-         args.ShouldWorkWithArrayLength = true;
-         leftOperand = leftOperand[..^"#Count".Length];
+         element.AppendVisualPath(builder);
       }
 
-      return (args, leftOperand, rightOperand);
+      return builder.ToString();
    }
 }
 
-public interface IProperty
+public abstract class QueryElement
 {
-   public object? GetValue(object obj);
+   public abstract void AppendVisualPath(StringBuilder builder);
 }
 
-public class Property(string name) : IProperty
+public class QueryPropertyElement(string propertyName) : QueryElement
 {
-   public string Name { get; } = name;
-
-   public object? GetValue(object obj)
+   public string PropertyName { get; } = propertyName;
+   public override void AppendVisualPath(StringBuilder builder)
    {
-      var propertyInfo = obj.GetType().GetProperty(Name);
-      return propertyInfo == null ? obj.GetType().GetField(Name)!.GetValue(obj) : propertyInfo.GetValue(obj);
+      if (builder.Length > 0) builder.Append('.');
+      builder.Append(PropertyName);
    }
 }
 
-public class ArrayProperty(string type) : IProperty
+public class QueryArrayAllElement : QueryElement
 {
-   public string Type { get; } = type;
-
-   public object? GetValue(object obj)
+   public override void AppendVisualPath(StringBuilder builder)
    {
-      var array = (Array) obj;
-      return array.Cast<object?>().FirstOrDefault(item => item!.GetType().Name == Type);
+      builder.Append("[+]");
    }
 }
 
-public class QueryArguments
+public class QueryArrayAnyElement : QueryElement
 {
-   /// <summary>
-   /// Specifies, whether we should work not with an array object, but with its length
-   /// </summary>
-   public bool ShouldWorkWithArrayLength { get; set; }
+   public override void AppendVisualPath(StringBuilder builder)
+   {
+      builder.Append("[*]");
+   }
+}
+
+public class QueryArrayLengthElement : QueryElement
+{
+   public override void AppendVisualPath(StringBuilder builder)
+   {
+      builder.Append("#Count");
+   }
+}
+
+public class QueryArrayIndexElement(int index) : QueryElement
+{
+   public int Index { get; } = index;
    
-   public bool ShouldSpecifyType { get; set; }
-   public string? SpecificType { get; set; }
+   public override void AppendVisualPath(StringBuilder builder)
+   {
+      builder.Append('[');
+      builder.Append(Index);
+      builder.Append(']');
+   }
+}
+
+public class QueryArrayTypeElement(string typeName) : QueryElement
+{
+   public string TypeName { get; } = typeName;
    
-   public (string path, string type, string field)[] PathInArrays { get; set; }
+   public override void AppendVisualPath(StringBuilder builder)
+   {
+      builder.Append('[');
+      builder.Append(TypeName);
+      builder.Append(']');
+   }
+}
+
+public class QueryTypeElement(string typeName) : QueryElement
+{
+   public string TypeName { get; } = typeName;
+   
+   public override void AppendVisualPath(StringBuilder builder)
+   {
+      builder.Append('(');
+      builder.Append(TypeName);
+      builder.Append(')');
+   }
 }

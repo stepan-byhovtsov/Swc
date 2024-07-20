@@ -22,7 +22,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBox x:Name="SearchTextBox"
-                         Text="{Binding RelativeSource={RelativeSource AncestorType=local:CustomComboBox}, Path=Value}"
+                         Text="{Binding RelativeSource={RelativeSource AncestorType=local:CustomComboBox}, Mode=OneWay, Path=Value}"
                          MinWidth="30"
                          HorizontalAlignment="Stretch"
                          VerticalAlignment="Bottom"

@@ -9,7 +9,6 @@ using Swc.MongoMigrationTemplate.Tools;
 using Swc.Template;
 using Swc.WpfClient.Controls;
 using Swc.WpfClient.Windows.Dialog;
-using PropertyPath = Swc.Core.Helpers.PropertyPath;
 
 namespace Swc.WpfClient.Windows;
 
@@ -37,8 +36,10 @@ public partial class DatabaseObserverWindow : Window
    {
       Objects.Clear();
 
-      // try
-      // {
+#if !DEBUG
+      try
+      {
+#endif
          FilterQuery query = new();
          foreach (var filter in Filters)
          {
@@ -59,11 +60,14 @@ public partial class DatabaseObserverWindow : Window
          {
             Objects.Add(MongoDb.FromBson(MigrationTool.Migrate(swcObject!, new SwcObject().TemplateVersion)!));
          }
-      // }
-      // catch (Exception exc)
-      // {
-      //   MessageBox.Show(this, $"Invalid filters:\n{exc.Message}", "Error", MessageBoxButton.OK);
-      // }
+         
+#if !DEBUG
+      }
+      catch (Exception exc)
+      {
+        MessageBox.Show(this, $"Invalid filters:\n{exc.Message}", "Error", MessageBoxButton.OK);
+      }
+#endif
    }
 
    private void ExitWindow(object sender, ExecutedRoutedEventArgs e)
@@ -98,20 +102,20 @@ public partial class DatabaseObserverWindow : Window
       DiscordChallengeMessageDialog dialog = new();
       if (dialog.ShowDialog() == true)
       {
-         var propertyPaths = Filters.Where(c => c.SelectedFilter == 7).Select(filter => PropertyPath.FromVisualPath(filter.Property!)).ToArray();
-
+         var propertyPaths = Filters.Where(c => c.SelectedFilter == 7).Select(c => c.Property).ToArray();
+      
          string GenerateValue(SwcObject obj)
          {
             StringBuilder str = new();
             foreach (var path in propertyPaths)
             {
-               str.Append(path.GetValue(obj));
+               str.Append(path!.GetValue(obj));
                str.Append('x');
             }
-
+      
             if (str.Length > 0)
                str.Remove(str.Length - 1, 1);
-
+      
             return str.ToString();
          }
          

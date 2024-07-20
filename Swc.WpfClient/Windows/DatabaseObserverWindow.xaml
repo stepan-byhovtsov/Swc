@@ -49,8 +49,7 @@
                 </MenuItem>
                 <MenuItem Header="Tools">
                     <MenuItem Header="Discord challenge message"
-                              Command="commands:DatabaseObserverCommands.ExportDiscordChallengeMessage"
-                              Icon="{StaticResource Delete}" />
+                              Command="commands:DatabaseObserverCommands.ExportDiscordChallengeMessage" />
                 </MenuItem>
             </Menu>
             <Border Margin="3" wpfClient:EnableDragHelper.EnableDrag="True" Grid.Column="1"
@@ -104,7 +103,7 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="{x:Type controls:FilterDefinition}">
                                 <StackPanel Orientation="Horizontal">
-                                    <controls:CustomComboBox ItemsSource="{Binding PropertyNames}"
+                                    <controls:CustomComboBox ItemsSource="{Binding Properties}"
                                               Value="{Binding Property, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                     <ComboBox Margin="10 0 0 0" ItemsSource="{Binding Filters}"
                                               SelectedIndex="{Binding SelectedFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
